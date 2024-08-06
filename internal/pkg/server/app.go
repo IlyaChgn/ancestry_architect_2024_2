@@ -4,10 +4,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/config"
 	myrouter "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/delivery/routers"
+	logger "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/usecases"
 	"github.com/gorilla/handlers"
 )
 
@@ -42,7 +44,13 @@ func (srv *Server) Run() error {
 	cfgPath := os.Getenv("CONFIG_PATH")
 	cfg := config.ReadConfig(cfgPath)
 
-	router := myrouter.NewRouter()
+	logger, err := logger.NewLogger(strings.Split(config.OutputLogPath, " "),
+		strings.Split(config.ErrorOutputLogPath, " "))
+	if err != nil {
+		return err //nolint:wrapcheck
+	}
+
+	router := myrouter.NewRouter(logger)
 
 	credentials := handlers.AllowCredentials()
 	headersOk := handlers.AllowedHeaders(cfg.Server.Headers)

@@ -7,6 +7,16 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type RequestUUIDKey string
+type LoggerKey string
+
+const (
+	OutputLogPath                        = "stdout logs.json"
+	ErrorOutputLogPath                   = "stderr err_logs.json"
+	RequestUUIDContextKey RequestUUIDKey = "requestUUID"
+	LoggerContextKey      LoggerKey      = "logger"
+)
+
 type ServerConfig struct {
 	Host    string   `yaml:"host"`
 	Port    string   `yaml:"port"`

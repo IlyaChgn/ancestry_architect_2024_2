@@ -1,17 +1,17 @@
 server:
-    host: 127.0.0.1
-    port: :8080
-    timeout: 5
-    origins:
-      - http://127.0.0.1:8008
-      - http://127.0.0.1
-    headers:
-      - X-Requested-With
-      - Content-Type
-    methods:
-      - GET
-      - POST
-      - DELETE
-      - PUT
-      - HEAD
-      - OPTIONS
+  host: 127.0.0.1
+  port: :8080
+  timeout: 5
+  origins:
+    - http://127.0.0.1:8008
+    - http://127.0.0.1
+  headers:
+    - X-Requested-With
+    - Content-Type
+  methods:
+    - GET
+    - POST
+    - DELETE
+    - PUT
+    - HEAD
+    - OPTIONS
