@@ -12,7 +12,7 @@ func RecoveryMiddleware(next http.Handler) http.Handler {
 		defer func() {
 			if err := recover(); err != nil {
 				log.Println("Panic occurred:", err)
-				http.Error(writer, responses.InternalServerError, responses.StatusInternalServerError)
+				http.Error(writer, responses.ErrInternalServer, responses.StatusInternalServerError)
 			}
 		}()
 		next.ServeHTTP(writer, request)

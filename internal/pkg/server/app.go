@@ -47,7 +47,7 @@ func (srv *Server) Run() error {
 	logger, err := logger.NewLogger(strings.Split(config.OutputLogPath, " "),
 		strings.Split(config.ErrorOutputLogPath, " "))
 	if err != nil {
-		return err //nolint:wrapcheck
+		return err
 	}
 
 	router := myrouter.NewRouter(logger)
