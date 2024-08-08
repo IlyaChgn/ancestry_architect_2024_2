@@ -2,13 +2,13 @@ package utils
 
 import (
 	"context"
-	"fmt"
 	"runtime"
 	"strconv"
 	"strings"
 
 	"go.uber.org/zap"
 
+	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/config"
 	newlogger "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/usecases"
 )
 
@@ -72,17 +72,13 @@ func LogHandlerError(logger *zap.SugaredLogger, msg interface{}, statusCode int)
 }
 
 func GetLoggerFromContext(ctx context.Context) *zap.SugaredLogger {
-	loggerContextKey := fmt.Sprintf("%v", ctx.Value("loggerContextKey"))
-	outputLogPath := fmt.Sprintf("%v", ctx.Value("outputLogPath"))
-	errorOutputLogPath := fmt.Sprintf("%v", ctx.Value("errorOutputLogPath"))
-
-	if logger, ok := ctx.Value(loggerContextKey).(*zap.SugaredLogger); ok {
+	if logger, ok := ctx.Value(config.LoggerContextKey).(*zap.SugaredLogger); ok {
 		return logger
 	}
 
-	logger, _ := newlogger.NewLogger(strings.Split(outputLogPath, " "),
-		strings.Split(errorOutputLogPath, " "))
-	logger.Error("Can`t get logger from context")
+	logger, _ := newlogger.NewLogger(strings.Split(config.OutputLogPath, " "),
+		strings.Split(config.ErrorOutputLogPath, " "))
+	logger.Error("Couldnt get logger from context")
 
 	return logger
 }
