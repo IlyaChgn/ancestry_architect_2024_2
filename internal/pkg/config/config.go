@@ -11,7 +11,7 @@ type RequestUUIDKey string
 type LoggerKey string
 
 const (
-	OutputLogPath                        = "stdout logs.json"
+	OutputLogPath                        = "logs.json"
 	ErrorOutputLogPath                   = "stderr err_logs.json"
 	RequestUUIDContextKey RequestUUIDKey = "requestUUID"
 	LoggerContextKey      LoggerKey      = "logger"
