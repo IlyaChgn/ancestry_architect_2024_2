@@ -25,3 +25,4 @@ go.work
 logs.json
 err_logs.json
 .env
+*.drawio
