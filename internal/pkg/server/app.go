@@ -23,10 +23,10 @@ type serverConfig struct {
 	Handler *http.Handler
 }
 
-func createServerConfig(cfg *config.Config, handler *http.Handler) serverConfig {
+func createServerConfig(addr string, timeout int, handler *http.Handler) serverConfig {
 	return serverConfig{
-		Address: cfg.Server.Host + cfg.Server.Port,
-		Timeout: time.Second * time.Duration(cfg.Server.Timeout),
+		Address: addr,
+		Timeout: time.Second * time.Duration(timeout),
 		Handler: handler,
 	}
 }
@@ -59,7 +59,7 @@ func (srv *Server) Run() error {
 
 	muxWithCORS := handlers.CORS(credentials, originsOk, headersOk, methodsOk)(router)
 
-	serverCfg := createServerConfig(cfg, &muxWithCORS)
+	serverCfg := createServerConfig(cfg.Server.Host+cfg.Server.Port, cfg.Server.Timeout, &muxWithCORS)
 	srv.server = createServer(serverCfg)
 
 	log.Println("Server is running on port", cfg.Server.Host+cfg.Server.Port)

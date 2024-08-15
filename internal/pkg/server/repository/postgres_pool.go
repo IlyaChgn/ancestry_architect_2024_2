@@ -1,0 +1,60 @@
+package repository
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"time"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+const (
+	defaultMaxConns          = int32(90)
+	defaultMinConns          = int32(0)
+	defaultMaxConnLifetime   = time.Hour
+	defaultMaxConnIdleTime   = time.Minute * 30
+	defaultHealthCheckPeriod = time.Minute
+	defaultConnectTimeout    = time.Second * 5
+)
+
+func postgresPoolConfig(user, password, host, port, dbname string) *pgxpool.Config {
+	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, password, host, port, dbname)
+
+	dbConfig, err := pgxpool.ParseConfig(dbURL)
+	if err != nil {
+		log.Fatal("Failed to create a config, error: ", err)
+	}
+
+	dbConfig.MaxConns = defaultMaxConns
+	dbConfig.MinConns = defaultMinConns
+	dbConfig.MaxConnLifetime = defaultMaxConnLifetime
+	dbConfig.MaxConnIdleTime = defaultMaxConnIdleTime
+	dbConfig.HealthCheckPeriod = defaultHealthCheckPeriod
+	dbConfig.ConnConfig.ConnectTimeout = defaultConnectTimeout
+
+	dbConfig.BeforeAcquire = func(_ context.Context, _ *pgx.Conn) bool {
+		return true
+	}
+
+	dbConfig.AfterRelease = func(_ *pgx.Conn) bool {
+		return true
+	}
+
+	dbConfig.BeforeClose = func(_ *pgx.Conn) {
+	}
+
+	return dbConfig
+}
+
+func NewPostgresPool(user, password, host, port, dbname string) (*pgxpool.Pool, error) {
+	postgresCfg := postgresPoolConfig(user, password, host, port, dbname)
+
+	pool, err := pgxpool.NewWithConfig(context.Background(), postgresCfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return pool, nil
+}
