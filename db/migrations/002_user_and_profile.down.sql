@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS public.profile;
+DROP TABLE IF EXISTS public.user;
+DROP TYPE IF EXISTS genders;
