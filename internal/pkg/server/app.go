@@ -9,6 +9,7 @@ import (
 
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/config"
 	myrouter "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/delivery/routers"
+	pool "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/repository"
 	logger "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/usecases"
 	"github.com/gorilla/handlers"
 )
@@ -47,8 +48,20 @@ func (srv *Server) Run() error {
 	logger, err := logger.NewLogger(strings.Split(config.OutputLogPath, " "),
 		strings.Split(config.ErrorOutputLogPath, " "))
 	if err != nil {
-		return err
+		log.Fatal("Something went wrong while creating logger: ", err)
+		os.Exit(1)
 	}
+
+	postgresURL := pool.NewConnectionString(cfg.Postgres.Username, cfg.Postgres.Password,
+		cfg.Postgres.Host, cfg.Postgres.Port, cfg.Postgres.DBName)
+
+	postgresPool, err := pool.NewPostgresPool(postgresURL)
+	if err != nil {
+		log.Fatal("Something went wrong while connecting to postgres database: ", err)
+		os.Exit(1)
+	}
+
+	print(postgresPool)
 
 	router := myrouter.NewRouter(logger)
 

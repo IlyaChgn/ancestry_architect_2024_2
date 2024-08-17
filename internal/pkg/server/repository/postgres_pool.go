@@ -19,9 +19,11 @@ const (
 	defaultConnectTimeout    = time.Second * 5
 )
 
-func postgresPoolConfig(user, password, host, port, dbname string) *pgxpool.Config {
-	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, password, host, port, dbname)
+func NewConnectionString(user, password, host, port, dbname string) string {
+	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, password, host, port, dbname)
+}
 
+func postgresPoolConfig(dbURL string) *pgxpool.Config {
 	dbConfig, err := pgxpool.ParseConfig(dbURL)
 	if err != nil {
 		log.Fatal("Failed to create a config, error: ", err)
@@ -48,8 +50,8 @@ func postgresPoolConfig(user, password, host, port, dbname string) *pgxpool.Conf
 	return dbConfig
 }
 
-func NewPostgresPool(user, password, host, port, dbname string) (*pgxpool.Pool, error) {
-	postgresCfg := postgresPoolConfig(user, password, host, port, dbname)
+func NewPostgresPool(dbURL string) (*pgxpool.Pool, error) {
+	postgresCfg := postgresPoolConfig(dbURL)
 
 	pool, err := pgxpool.NewWithConfig(context.Background(), postgresCfg)
 	if err != nil {
