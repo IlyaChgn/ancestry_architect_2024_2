@@ -55,13 +55,11 @@ func (srv *Server) Run() error {
 	postgresURL := pool.NewConnectionString(cfg.Postgres.Username, cfg.Postgres.Password,
 		cfg.Postgres.Host, cfg.Postgres.Port, cfg.Postgres.DBName)
 
-	postgresPool, err := pool.NewPostgresPool(postgresURL)
+	_, err = pool.NewPostgresPool(postgresURL)
 	if err != nil {
 		log.Fatal("Something went wrong while connecting to postgres database: ", err)
 		os.Exit(1)
 	}
-
-	print(postgresPool)
 
 	router := myrouter.NewRouter(logger)
 

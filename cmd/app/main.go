@@ -9,7 +9,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var migrationFlag = flag.Uint("migrate", 0, "Применяет миграцию указанной версии. Если указан 0, то флаг игонорируется")
+var migrationFlag = flag.Uint("migrate", 0, "Применяет миграцию указанной версии. Если указан 0, то флаг игнорируется")
 
 func main() {
 	err := godotenv.Load(".env")
