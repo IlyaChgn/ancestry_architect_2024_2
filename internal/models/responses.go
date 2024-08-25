@@ -9,3 +9,8 @@ type ErrResponse struct {
 	Code   int    `json:"code"`
 	Status string `json:"status"`
 }
+
+type SeveralErrsResponse struct {
+	Code   int      `json:"code"`
+	Errors []string `json:"errors"`
+}

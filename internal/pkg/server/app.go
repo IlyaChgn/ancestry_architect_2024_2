@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	authrepo "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/auth/repository"
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/config"
 	myrouter "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/delivery/routers"
 	pool "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/repository"
@@ -55,13 +56,17 @@ func (srv *Server) Run() error {
 	postgresURL := pool.NewConnectionString(cfg.Postgres.Username, cfg.Postgres.Password,
 		cfg.Postgres.Host, cfg.Postgres.Port, cfg.Postgres.DBName)
 
-	_, err = pool.NewPostgresPool(postgresURL)
+	postgresPool, err := pool.NewPostgresPool(postgresURL)
 	if err != nil {
 		log.Fatal("Something went wrong while connecting to postgres database: ", err)
 		os.Exit(1)
 	}
 
-	router := myrouter.NewRouter(logger)
+	redisClient := pool.NewRedisClient(cfg.Redis.Host, cfg.Redis.Port, cfg.Redis.Password)
+
+	authStorage := authrepo.NewAuthStorage(postgresPool, redisClient)
+
+	router := myrouter.NewRouter(logger, authStorage)
 
 	credentials := handlers.AllowCredentials()
 	headersOk := handlers.AllowedHeaders(cfg.Server.Headers)

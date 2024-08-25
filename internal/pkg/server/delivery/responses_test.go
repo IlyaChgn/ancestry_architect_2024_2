@@ -16,13 +16,7 @@ func TestOkResponse(t *testing.T) {
 	writer := httptest.NewRecorder()
 	data := "test case"
 
-	logger, err := logger.NewLogger(strings.Split(config.OutputLogPath, " "),
-		strings.Split(config.ErrorOutputLogPath, " "))
-	if err != nil {
-		t.Fatalf("Error while creating logger, %v", err)
-	}
-
-	responses.SendOkResponse(writer, logger, data)
+	responses.SendOkResponse(writer, data)
 
 	if code := writer.Code; code != responses.StatusOk {
 		t.Errorf("Expected status 200, got: %d", code)
@@ -32,7 +26,7 @@ func TestOkResponse(t *testing.T) {
 	defer res.Body.Close()
 
 	var resultBody models.OkResponse
-	err = json.NewDecoder(res.Body).Decode(&resultBody)
+	err := json.NewDecoder(res.Body).Decode(&resultBody)
 	if err != nil {
 		t.Fatalf("Expected error to be nil got %v", err)
 	}

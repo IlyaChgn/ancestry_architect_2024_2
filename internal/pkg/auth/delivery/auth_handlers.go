@@ -1,0 +1,180 @@
+package delivery
+
+import (
+	"encoding/json"
+	"log"
+	"net/http"
+	"time"
+
+	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/models"
+	session "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/auth/repository/session"
+	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/auth/usecases"
+	responses "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/delivery"
+	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/utils"
+	"github.com/google/uuid"
+	"go.uber.org/zap"
+)
+
+type AuthHandler struct {
+	storage usecases.AuthStorageInterface
+}
+
+func NewAuthHandler(storage usecases.AuthStorageInterface) *AuthHandler {
+	return &AuthHandler{
+		storage: storage,
+	}
+}
+
+func createSession(sessionID string) *http.Cookie {
+	return &http.Cookie{
+		Name:     "session_id",
+		Value:    sessionID,
+		Path:     "/",
+		Expires:  time.Now().Add(session.SessionDuration),
+		HttpOnly: true,
+	}
+}
+
+func (authHandler *AuthHandler) Login(writer http.ResponseWriter, request *http.Request) {
+	ctx := request.Context()
+	logger := utils.GetLoggerFromContext(ctx).With(zap.String("handler", utils.GetFunctionName()))
+
+	var requestData models.UserLoginRequest
+
+	err := json.NewDecoder(request.Body).Decode(&requestData)
+	if err != nil {
+		log.Println(err, responses.StatusInternalServerError)
+		responses.SendErrResponse(writer, logger, responses.StatusInternalServerError, responses.ErrInternalServer)
+
+		return
+	}
+
+	storage := authHandler.storage
+
+	oldSession, _ := request.Cookie("session_id")
+	if oldSession != nil {
+		if oldUser, _ := storage.GetUserBySessionID(ctx, oldSession.Value); oldUser != nil {
+			log.Println("User already authorized", responses.StatusBadRequest)
+			responses.SendErrResponse(writer, logger, responses.StatusBadRequest, responses.ErrAuthorized)
+
+			return
+		}
+	}
+
+	user, err := storage.GetUserByEmail(ctx, requestData.Email)
+	if err != nil {
+		log.Println("User with same email doesn`t exist", responses.StatusBadRequest)
+		responses.SendErrResponse(writer, logger, responses.StatusBadRequest, responses.ErrWrongCredentials)
+
+		return
+	}
+
+	if !utils.CheckPassword(requestData.Password, user.PasswordHash) {
+		log.Println("Passwords do not match", responses.StatusBadRequest)
+		responses.SendErrResponse(writer, logger, responses.StatusBadRequest, responses.ErrWrongCredentials)
+
+		return
+	}
+
+	sessionID := uuid.NewString()
+	err = storage.CreateSession(ctx, sessionID, user.ID)
+	if err != nil {
+		log.Println(err, responses.StatusInternalServerError)
+		responses.SendErrResponse(writer, logger, responses.StatusInternalServerError, responses.ErrInternalServer)
+
+		return
+	}
+
+	newSession := createSession(sessionID)
+	http.SetCookie(writer, newSession)
+
+	responses.SendOkResponse(writer, models.UserResponse{
+		User:   *user,
+		IsAuth: true,
+	})
+}
+
+func (authHandler *AuthHandler) Logout(writer http.ResponseWriter, request *http.Request) {
+	ctx := request.Context()
+	logger := utils.GetLoggerFromContext(ctx).With(zap.String("handler", utils.GetFunctionName()))
+
+	session, _ := request.Cookie("session_id")
+	if session == nil {
+		log.Println("User not authorized", responses.StatusBadRequest)
+		responses.SendErrResponse(writer, logger, responses.StatusBadRequest, responses.ErrNotAuthorized)
+
+		return
+	}
+
+	storage := authHandler.storage
+	err := storage.RemoveSession(ctx, session.Value)
+
+	if err != nil {
+		log.Println("User not authorized", responses.StatusBadRequest)
+		responses.SendErrResponse(writer, logger, responses.StatusBadRequest, responses.ErrNotAuthorized)
+
+		return
+	}
+
+	session.Expires = time.Now().AddDate(0, 0, -1)
+	http.SetCookie(writer, session)
+
+	responses.SendOkResponse(writer, models.UserResponse{IsAuth: false})
+}
+
+func (authHandler *AuthHandler) Signup(writer http.ResponseWriter, request *http.Request) {
+	ctx := request.Context()
+	logger := utils.GetLoggerFromContext(ctx).With(zap.String("handler", utils.GetFunctionName()))
+
+	var requestData models.UserSignupRequest
+
+	err := json.NewDecoder(request.Body).Decode(&requestData)
+	if err != nil {
+		log.Println(err, responses.StatusInternalServerError)
+		responses.SendErrResponse(writer, logger, responses.StatusInternalServerError, responses.ErrInternalServer)
+
+		return
+	}
+
+	storage := authHandler.storage
+
+	oldSession, _ := request.Cookie("session_id")
+	if oldSession != nil {
+		if oldUser, _ := storage.GetUserBySessionID(ctx, oldSession.Value); oldUser != nil {
+			log.Println("User already authorized", responses.StatusBadRequest)
+			responses.SendErrResponse(writer, logger, responses.StatusBadRequest, responses.ErrAuthorized)
+
+			return
+		}
+	}
+
+	user, errs := storage.CreateUser(ctx, requestData.Email, requestData.Password, requestData.PasswordRepeat)
+	if errs != nil {
+		log.Println(errs, responses.StatusBadRequest)
+		responses.SendSeveralErrsResponse(writer, logger, responses.StatusBadRequest, errs)
+
+		return
+	}
+
+	sessionID := uuid.NewString()
+	err = storage.CreateSession(ctx, sessionID, user.ID)
+	if err != nil {
+		log.Println(err, responses.StatusInternalServerError)
+		responses.SendErrResponse(writer, logger, responses.StatusInternalServerError, responses.ErrInternalServer)
+
+		return
+	}
+
+	newSession := createSession(sessionID)
+	http.SetCookie(writer, newSession)
+
+	responses.SendOkResponse(writer, models.UserResponse{
+		User:   *user,
+		IsAuth: true,
+	})
+}
+
+func (authHandler *AuthHandler) CheckAuth(writer http.ResponseWriter, request *http.Request) {
+	// ctx := request.Context()
+	// logger := utils.GetLoggerFromContext(ctx).With(zap.String("handler", utils.GetFunctionName()))
+}

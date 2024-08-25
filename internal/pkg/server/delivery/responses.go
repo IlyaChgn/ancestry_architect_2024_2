@@ -21,10 +21,12 @@ const (
 )
 
 const (
-	ErrBadRequest   = "Bad request"
-	ErrUnauthorized = "User not authorized"
-	ErrAuthorized   = "User already authorized"
-	ErrForbidden    = "User have no access to this content"
+	ErrBadRequest       = "Bad request"
+	ErrWrongCredentials = "Wrong credentials"
+	ErrAuthorized       = "User already authorized"
+
+	ErrNotAuthorized = "User not authorized"
+	ErrForbidden     = "User have no access to this content"
 
 	ErrInternalServer = "Server error"
 )
@@ -40,6 +42,13 @@ func newErrResponse(code int, status string) *models.ErrResponse {
 	return &models.ErrResponse{
 		Code:   code,
 		Status: status,
+	}
+}
+
+func newSeveralErrsResponse(code int, errs []string) *models.SeveralErrsResponse {
+	return &models.SeveralErrsResponse{
+		Code:   code,
+		Errors: errs,
 	}
 }
 
@@ -61,13 +70,12 @@ func sendResponse(writer http.ResponseWriter, response any) {
 	}
 }
 
-func SendOkResponse(writer http.ResponseWriter, logger *zap.SugaredLogger, body any) {
+func SendOkResponse(writer http.ResponseWriter, body any) {
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(StatusOk)
 
 	response := newOkResponse(body)
 
-	utils.LogHandlerInfo(logger, "success", StatusOk)
 	sendResponse(writer, response)
 }
 
@@ -78,5 +86,15 @@ func SendErrResponse(writer http.ResponseWriter, logger *zap.SugaredLogger, code
 	response := newErrResponse(code, status)
 
 	utils.LogHandlerError(logger, status, code)
+	sendResponse(writer, response)
+}
+
+func SendSeveralErrsResponse(writer http.ResponseWriter, logger *zap.SugaredLogger, code int, errs []string) {
+	writer.Header().Set("Content-Type", "application/json")
+	writer.WriteHeader(code)
+
+	response := newSeveralErrsResponse(code, errs)
+
+	utils.LogHandlerError(logger, errs, code)
 	sendResponse(writer, response)
 }
