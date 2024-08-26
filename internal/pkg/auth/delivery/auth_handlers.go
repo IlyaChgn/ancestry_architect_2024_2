@@ -150,12 +150,10 @@ func (authHandler *AuthHandler) Signup(writer http.ResponseWriter, request *http
 
 func (authHandler *AuthHandler) CheckAuth(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
-	logger := utils.GetLoggerFromContext(ctx).With(zap.String("handler", utils.GetFunctionName()))
 
 	session, _ := request.Cookie("session_id")
 	if session == nil {
 		responses.SendOkResponse(writer, models.UserResponse{IsAuth: false})
-		utils.LogHandlerInfo(logger, "success", 200)
 
 		return
 	}
