@@ -51,16 +51,6 @@ func (authHandler *AuthHandler) Login(writer http.ResponseWriter, request *http.
 
 	storage := authHandler.storage
 
-	oldSession, _ := request.Cookie("session_id")
-	if oldSession != nil {
-		if oldUser, _ := storage.GetUserBySessionID(ctx, oldSession.Value); oldUser != nil {
-			log.Println("User already authorized", responses.StatusBadRequest)
-			responses.SendErrResponse(writer, logger, responses.StatusBadRequest, responses.ErrAuthorized)
-
-			return
-		}
-	}
-
 	user, err := storage.GetUserByEmail(ctx, requestData.Email)
 	if err != nil {
 		log.Println("User with same email doesn`t exist", responses.StatusBadRequest)
@@ -99,12 +89,6 @@ func (authHandler *AuthHandler) Logout(writer http.ResponseWriter, request *http
 	logger := utils.GetLoggerFromContext(ctx).With(zap.String("handler", utils.GetFunctionName()))
 
 	session, _ := request.Cookie("session_id")
-	if session == nil {
-		log.Println("User not authorized", responses.StatusBadRequest)
-		responses.SendErrResponse(writer, logger, responses.StatusBadRequest, responses.ErrNotAuthorized)
-
-		return
-	}
 
 	storage := authHandler.storage
 	err := storage.RemoveSession(ctx, session.Value)
@@ -138,16 +122,6 @@ func (authHandler *AuthHandler) Signup(writer http.ResponseWriter, request *http
 
 	storage := authHandler.storage
 
-	oldSession, _ := request.Cookie("session_id")
-	if oldSession != nil {
-		if oldUser, _ := storage.GetUserBySessionID(ctx, oldSession.Value); oldUser != nil {
-			log.Println("User already authorized", responses.StatusBadRequest)
-			responses.SendErrResponse(writer, logger, responses.StatusBadRequest, responses.ErrAuthorized)
-
-			return
-		}
-	}
-
 	user, errs := storage.CreateUser(ctx, requestData.Email, requestData.Password, requestData.PasswordRepeat)
 	if errs != nil {
 		log.Println(errs, responses.StatusBadRequest)
@@ -175,6 +149,28 @@ func (authHandler *AuthHandler) Signup(writer http.ResponseWriter, request *http
 }
 
 func (authHandler *AuthHandler) CheckAuth(writer http.ResponseWriter, request *http.Request) {
-	// ctx := request.Context()
-	// logger := utils.GetLoggerFromContext(ctx).With(zap.String("handler", utils.GetFunctionName()))
+	ctx := request.Context()
+	logger := utils.GetLoggerFromContext(ctx).With(zap.String("handler", utils.GetFunctionName()))
+
+	session, _ := request.Cookie("session_id")
+	if session == nil {
+		responses.SendOkResponse(writer, models.UserResponse{IsAuth: false})
+		utils.LogHandlerInfo(logger, "success", 200)
+
+		return
+	}
+
+	storage := authHandler.storage
+	user, _ := storage.GetUserBySessionID(ctx, session.Value)
+
+	if user == nil {
+		responses.SendOkResponse(writer, models.UserResponse{IsAuth: false})
+
+		return
+	}
+
+	responses.SendOkResponse(writer, models.UserResponse{
+		User:   *user,
+		IsAuth: true,
+	})
 }
