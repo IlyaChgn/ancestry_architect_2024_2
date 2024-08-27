@@ -7,7 +7,7 @@ import (
 
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/models"
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/utils"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v4"
 	"go.uber.org/zap"
 )
 
@@ -34,7 +34,7 @@ func (storage *AuthStorage) GetUserByEmail(ctx context.Context, email string) (*
 
 	var user *models.User
 
-	err := pgx.BeginFunc(ctx, storage.pool, func(tx pgx.Tx) error {
+	err := storage.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
 		result, err := storage.getUserByEmail(ctx, tx, email)
 		user = result
 
@@ -72,7 +72,7 @@ func (storage *AuthStorage) GetUserByID(ctx context.Context, id uint) (*models.U
 
 	var user *models.User
 
-	err := pgx.BeginFunc(ctx, storage.pool, func(tx pgx.Tx) error {
+	err := storage.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
 		result, err := storage.getUserByID(ctx, tx, id)
 		user = result
 

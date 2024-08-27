@@ -7,7 +7,7 @@ import (
 
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/models"
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/utils"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v4"
 	"go.uber.org/zap"
 )
 
@@ -45,7 +45,7 @@ func (storage *AuthStorage) CreateUser(ctx context.Context, email, password,
 		return nil, errs
 	}
 
-	err := pgx.BeginFunc(ctx, storage.pool, func(tx pgx.Tx) error {
+	err := storage.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
 		err := storage.createUser(ctx, tx, email, utils.HashPassword(password))
 
 		return err

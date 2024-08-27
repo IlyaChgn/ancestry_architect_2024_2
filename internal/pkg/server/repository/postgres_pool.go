@@ -6,9 +6,18 @@ import (
 	"log"
 	"time"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
+
+type PostgresPool interface {
+	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
+	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
+	Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error)
+	BeginFunc(ctx context.Context, f func(pgx.Tx) error) (err error)
+	Close()
+}
 
 const (
 	defaultMaxConns          = int32(90)
@@ -44,16 +53,13 @@ func postgresPoolConfig(dbURL string) *pgxpool.Config {
 		return true
 	}
 
-	dbConfig.BeforeClose = func(_ *pgx.Conn) {
-	}
-
 	return dbConfig
 }
 
 func NewPostgresPool(dbURL string) (*pgxpool.Pool, error) {
 	postgresCfg := postgresPoolConfig(dbURL)
 
-	pool, err := pgxpool.NewWithConfig(context.Background(), postgresCfg)
+	pool, err := pgxpool.ConnectConfig(context.Background(), postgresCfg)
 	if err != nil {
 		return nil, err
 	}

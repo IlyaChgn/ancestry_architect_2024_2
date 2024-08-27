@@ -2,7 +2,7 @@ package repository
 
 import (
 	session "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/auth/repository/session"
-	"github.com/jackc/pgx/v5/pgxpool"
+	pool "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/repository"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -10,10 +10,10 @@ const ErrUserNotExists = "User doesn`t exist"
 
 type AuthStorage struct {
 	manager *session.SessionManager
-	pool    *pgxpool.Pool
+	pool    pool.PostgresPool
 }
 
-func NewAuthStorage(pool *pgxpool.Pool, client *redis.Client) *AuthStorage {
+func NewAuthStorage(pool pool.PostgresPool, client *redis.Client) *AuthStorage {
 	return &AuthStorage{
 		manager: session.NewSessionManager(client),
 		pool:    pool,
