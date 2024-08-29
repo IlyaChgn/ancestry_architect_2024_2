@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	errUserAlreadyExists = "User with same emaul already exists"
+	errUserAlreadyExists = "User with same email already exists"
 )
 
 func (storage *AuthStorage) CreateUser(ctx context.Context, email, password,
