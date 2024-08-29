@@ -7,29 +7,12 @@ import (
 
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/models"
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/utils"
-	"github.com/jackc/pgx/v4"
 	"go.uber.org/zap"
 )
 
 const (
 	errUserAlreadyExists = "User with same emaul already exists"
 )
-
-func (storage *AuthStorage) createUser(ctx context.Context, tx pgx.Tx,
-	email, passwordHash string) error {
-	logger := utils.GetLoggerFromContext(ctx).With(zap.String("storage", utils.GetFunctionName()))
-
-	if _, err := tx.Exec(ctx, CreateUserQuery, email, passwordHash); err != nil {
-		customErr := fmt.Errorf("something went wrong while scanning line, %v", err)
-
-		utils.LogError(logger, customErr)
-		log.Println(customErr)
-
-		return err
-	}
-
-	return nil
-}
 
 func (storage *AuthStorage) CreateUser(ctx context.Context, email, password,
 	passwordRepeat string) (*models.User, []string) {
@@ -45,21 +28,20 @@ func (storage *AuthStorage) CreateUser(ctx context.Context, email, password,
 		return nil, errs
 	}
 
-	err := storage.pool.BeginFunc(ctx, func(tx pgx.Tx) error {
-		err := storage.createUser(ctx, tx, email, utils.HashPassword(password))
+	var user models.User
 
-		return err
-	})
+	line := storage.pool.QueryRow(ctx, CreateUserQuery, email, utils.HashPassword(password))
 
-	if err != nil {
-		utils.LogError(logger, fmt.Errorf("something went wrong while creating user, %v", err))
+	if err := line.Scan(&user.ID, &user.Email); err != nil {
+		customErr := fmt.Errorf("something went wrong while creating user, %v", err)
 
-		return nil, []string{fmt.Sprintf("%v", err)}
+		utils.LogError(logger, customErr)
+		log.Println(customErr)
+
+		return nil, []string{fmt.Sprintf("%v", customErr)}
 	}
 
-	user, _ := storage.GetUserByEmail(ctx, email)
-
-	return user, nil
+	return &user, nil
 }
 
 func (storage *AuthStorage) CreateSession(ctx context.Context, sessionID string, userID uint) error {

@@ -1,14 +1,14 @@
 package repository
 
 const (
-	GerUserByEmailQuery = `
-		SELECT *
+	GetUserByEmailQuery = `
+		SELECT id, email, password_hash
 		FROM public.user
 		WHERE email = $1;
 		`
 
-	GerUserByIDQuery = `
-		SELECT *
+	GetUserByIDQuery = `
+		SELECT id, email, password_hash
 		FROM public.user
 		WHERE id = $1;
 		`
@@ -17,5 +17,6 @@ const (
 		INSERT
 		INTO public.user (email, password_hash)
 		VALUES ($1, $2)
+		RETURNING id, email;
 		`
 )
