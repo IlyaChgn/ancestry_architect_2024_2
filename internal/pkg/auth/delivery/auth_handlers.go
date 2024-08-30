@@ -60,7 +60,7 @@ func (authHandler *AuthHandler) Login(writer http.ResponseWriter, request *http.
 	}
 
 	if !utils.CheckPassword(requestData.Password, user.PasswordHash) {
-		log.Println("Passwords do not match", responses.StatusBadRequest)
+		log.Println("Wrong password", responses.StatusBadRequest)
 		responses.SendErrResponse(writer, logger, responses.StatusBadRequest, responses.ErrWrongCredentials)
 
 		return
