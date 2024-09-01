@@ -9,9 +9,9 @@ func ServeAuthRouter(router *mux.Router, authHandler *authdel.AuthHandler,
 	loginRequiredMiddleware, logoutRequiredMiddleware mux.MiddlewareFunc) {
 	subrouter := router.PathPrefix("/auth").Subrouter()
 
-	subrouterLogout := subrouter.PathPrefix("").Subrouter()
-	subrouterLogout.Use(loginRequiredMiddleware)
-	subrouterLogout.HandleFunc("/logout", authHandler.Logout).Methods("POST")
+	subrouterLoginRequired := subrouter.PathPrefix("").Subrouter()
+	subrouterLoginRequired.Use(loginRequiredMiddleware)
+	subrouterLoginRequired.HandleFunc("/logout", authHandler.Logout).Methods("POST")
 
 	subrouterLogoutRequired := subrouter.PathPrefix("").Subrouter()
 	subrouterLogoutRequired.Use(logoutRequiredMiddleware)
