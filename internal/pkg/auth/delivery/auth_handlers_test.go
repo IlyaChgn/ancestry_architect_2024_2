@@ -19,11 +19,19 @@ import (
 )
 
 func TestLogin(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockAuthStorage := mock_usecases.NewMockAuthStorageInterface(ctrl)
-	hash := utils.HashPassword("password")
+	mockProfileStorage := mock_usecases.NewMockProfileStorageInterface(ctrl)
+	user := &models.UserResponse{
+		User: models.User{
+			ID:           1,
+			PasswordHash: utils.HashPassword("password"),
+		},
+	}
 
 	tests := []struct {
 		name           string
@@ -37,10 +45,7 @@ func TestLogin(t *testing.T) {
 			requestBody:  []byte(`{"email": "", "password": "password"}`),
 			expectedCode: responses.StatusOk,
 			setup: func() {
-				mockAuthStorage.EXPECT().GetUserByEmail(context.Background(), gomock.Any()).Return(&models.User{
-					ID:           1,
-					PasswordHash: hash,
-				}, nil)
+				mockAuthStorage.EXPECT().GetUserByEmail(context.Background(), gomock.Any()).Return(user, nil)
 				mockAuthStorage.EXPECT().CreateSession(context.Background(), gomock.Any(), uint(1)).Return(nil)
 			},
 		},
@@ -50,10 +55,7 @@ func TestLogin(t *testing.T) {
 			expectedCode:   responses.StatusBadRequest,
 			expectedStatus: responses.ErrWrongCredentials,
 			setup: func() {
-				mockAuthStorage.EXPECT().GetUserByEmail(context.Background(), gomock.Any()).Return(&models.User{
-					ID:           1,
-					PasswordHash: hash,
-				}, nil)
+				mockAuthStorage.EXPECT().GetUserByEmail(context.Background(), gomock.Any()).Return(user, nil)
 			},
 		},
 		{
@@ -62,10 +64,7 @@ func TestLogin(t *testing.T) {
 			expectedCode:   responses.StatusInternalServerError,
 			expectedStatus: responses.ErrInternalServer,
 			setup: func() {
-				mockAuthStorage.EXPECT().GetUserByEmail(context.Background(), gomock.Any()).Return(&models.User{
-					ID:           1,
-					PasswordHash: hash,
-				}, nil)
+				mockAuthStorage.EXPECT().GetUserByEmail(context.Background(), gomock.Any()).Return(user, nil)
 				mockAuthStorage.EXPECT().CreateSession(context.Background(), gomock.Any(), uint(1)).
 					Return(errors.New("err"))
 			},
@@ -86,7 +85,7 @@ func TestLogin(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
 
-			authHandler := delivery.NewAuthHandler(mockAuthStorage)
+			authHandler := delivery.NewAuthHandler(mockAuthStorage, mockProfileStorage)
 
 			request := httptest.NewRequest("POST", "/login", bytes.NewBuffer(tt.requestBody))
 
@@ -113,10 +112,13 @@ func TestLogin(t *testing.T) {
 }
 
 func TestLogout(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockAuthStorage := mock_usecases.NewMockAuthStorageInterface(ctrl)
+	mockProfileStorage := mock_usecases.NewMockProfileStorageInterface(ctrl)
 	cookieName := "session_id"
 
 	tests := []struct {
@@ -147,7 +149,7 @@ func TestLogout(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
 
-			authHandler := delivery.NewAuthHandler(mockAuthStorage)
+			authHandler := delivery.NewAuthHandler(mockAuthStorage, mockProfileStorage)
 
 			request := httptest.NewRequest("POST", "/logout", nil)
 
@@ -176,10 +178,13 @@ func TestLogout(t *testing.T) {
 }
 
 func TestSignup(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockAuthStorage := mock_usecases.NewMockAuthStorageInterface(ctrl)
+	mockProfileStorage := mock_usecases.NewMockProfileStorageInterface(ctrl)
 
 	tests := []struct {
 		name           string
@@ -192,13 +197,16 @@ func TestSignup(t *testing.T) {
 	}{
 		{
 			name:         "successful signup",
-			requestBody:  []byte(`{"email": "", "password": "password"}`),
+			requestBody:  []byte(`{"email": "", "password": "password", "passwordRepeat": "password"}`),
 			expectedCode: responses.StatusOk,
 			setup: func() {
 				mockAuthStorage.EXPECT().CreateUser(context.Background(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(&models.User{
 						ID: 1,
 					}, nil)
+				mockProfileStorage.EXPECT().CreateProfile(context.Background(), uint(1)).Return(&models.Profile{
+					ID: 1,
+				}, nil)
 				mockAuthStorage.EXPECT().CreateSession(context.Background(), gomock.Any(), uint(1)).Return(nil)
 			},
 		},
@@ -223,7 +231,9 @@ func TestSignup(t *testing.T) {
 					Return(&models.User{
 						ID: 1,
 					}, nil)
-
+				mockProfileStorage.EXPECT().CreateProfile(context.Background(), uint(1)).Return(&models.Profile{
+					ID: 1,
+				}, nil)
 				mockAuthStorage.EXPECT().CreateSession(context.Background(), gomock.Any(), uint(1)).
 					Return(errors.New("err"))
 			},
@@ -234,7 +244,7 @@ func TestSignup(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
 
-			authHandler := delivery.NewAuthHandler(mockAuthStorage)
+			authHandler := delivery.NewAuthHandler(mockAuthStorage, mockProfileStorage)
 
 			request := httptest.NewRequest("POST", "/signup", bytes.NewBuffer(tt.requestBody))
 
@@ -271,10 +281,13 @@ func TestSignup(t *testing.T) {
 }
 
 func TestCheckAuth(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockAuthStorage := mock_usecases.NewMockAuthStorageInterface(ctrl)
+	mockProfileStorage := mock_usecases.NewMockProfileStorageInterface(ctrl)
 	cookieName := "session_id"
 
 	tests := []struct {
@@ -286,9 +299,12 @@ func TestCheckAuth(t *testing.T) {
 			name:       "test is auth",
 			needCookie: true,
 			setup: func() {
-				mockAuthStorage.EXPECT().GetUserBySessionID(context.Background(), gomock.Any()).Return(&models.User{
-					ID: 1,
-				}, nil)
+				mockAuthStorage.EXPECT().GetUserBySessionID(context.Background(), gomock.Any()).
+					Return(&models.UserResponse{
+						User: models.User{
+							ID: 1,
+						},
+					}, nil)
 			},
 		},
 		{
@@ -309,7 +325,7 @@ func TestCheckAuth(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
 
-			authHandler := delivery.NewAuthHandler(mockAuthStorage)
+			authHandler := delivery.NewAuthHandler(mockAuthStorage, mockProfileStorage)
 
 			request := httptest.NewRequest("GET", "/check_auth", nil)
 

@@ -13,31 +13,38 @@ import (
 
 func TestGetUserByEmail(t *testing.T) {
 	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockPool := pgxpoolmock.NewMockPgxIface(ctrl)
 
 	email := "test@test.ru"
+	name := ""
+	surname := ""
 
 	tests := []struct {
 		name        string
 		email       string
-		expected    *models.User
+		expected    *models.UserResponse
 		expectedErr bool
 		setup       func()
 	}{
 		{
 			name:  "successful case",
 			email: email,
-			expected: &models.User{
-				ID:           1,
-				Email:        email,
-				PasswordHash: "hash",
+			expected: &models.UserResponse{
+				User: models.User{
+					ID:           1,
+					Email:        email,
+					PasswordHash: "hash",
+				},
+				Name:    "",
+				Surname: "",
 			},
 			expectedErr: false,
 			setup: func() {
-				pgxRows := pgxpoolmock.NewRow(uint(1), email, "hash")
+				pgxRows := pgxpoolmock.NewRow(uint(1), email, "hash", &name, &surname)
 				mockPool.EXPECT().
 					QueryRow(context.Background(), repository.GetUserByEmailQuery, email).
 					Return(pgxRows)
@@ -75,31 +82,38 @@ func TestGetUserByEmail(t *testing.T) {
 
 func TestGetUserByID(t *testing.T) {
 	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockPool := pgxpoolmock.NewMockPgxIface(ctrl)
 
 	id := uint(1)
+	name := ""
+	surname := ""
 
 	tests := []struct {
 		name        string
 		id          uint
-		expected    *models.User
+		expected    *models.UserResponse
 		expectedErr bool
 		setup       func()
 	}{
 		{
 			name: "successful case",
 			id:   id,
-			expected: &models.User{
-				ID:           1,
-				Email:        "test@test.ru",
-				PasswordHash: "hash",
+			expected: &models.UserResponse{
+				User: models.User{
+					ID:           1,
+					Email:        "test@test.ru",
+					PasswordHash: "hash",
+				},
+				Name:    name,
+				Surname: surname,
 			},
 			expectedErr: false,
 			setup: func() {
-				pgxRows := pgxpoolmock.NewRow(id, "test@test.ru", "hash")
+				pgxRows := pgxpoolmock.NewRow(id, "test@test.ru", "hash", &name, &surname)
 				mockPool.EXPECT().
 					QueryRow(context.Background(), repository.GetUserByIDQuery, id).
 					Return(pgxRows)

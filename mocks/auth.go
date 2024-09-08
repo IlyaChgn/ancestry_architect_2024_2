@@ -65,10 +65,10 @@ func (mr *MockAuthStorageInterfaceMockRecorder) CreateUser(ctx, email, password,
 }
 
 // GetUserByEmail mocks base method.
-func (m *MockAuthStorageInterface) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
+func (m *MockAuthStorageInterface) GetUserByEmail(ctx context.Context, email string) (*models.UserResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByEmail", ctx, email)
-	ret0, _ := ret[0].(*models.User)
+	ret0, _ := ret[0].(*models.UserResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -80,10 +80,10 @@ func (mr *MockAuthStorageInterfaceMockRecorder) GetUserByEmail(ctx, email interf
 }
 
 // GetUserByID mocks base method.
-func (m *MockAuthStorageInterface) GetUserByID(ctx context.Context, id uint) (*models.User, error) {
+func (m *MockAuthStorageInterface) GetUserByID(ctx context.Context, id uint) (*models.UserResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByID", ctx, id)
-	ret0, _ := ret[0].(*models.User)
+	ret0, _ := ret[0].(*models.UserResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -95,10 +95,10 @@ func (mr *MockAuthStorageInterfaceMockRecorder) GetUserByID(ctx, id interface{})
 }
 
 // GetUserBySessionID mocks base method.
-func (m *MockAuthStorageInterface) GetUserBySessionID(ctx context.Context, sessionID string) (*models.User, error) {
+func (m *MockAuthStorageInterface) GetUserBySessionID(ctx context.Context, sessionID string) (*models.UserResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserBySessionID", ctx, sessionID)
-	ret0, _ := ret[0].(*models.User)
+	ret0, _ := ret[0].(*models.UserResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

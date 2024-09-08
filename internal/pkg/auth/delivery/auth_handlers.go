@@ -132,8 +132,9 @@ func (authHandler *AuthHandler) Signup(writer http.ResponseWriter, request *http
 		return
 	}
 
-	sessionID := uuid.NewString()
-	err = storage.CreateSession(ctx, sessionID, user.ID)
+	profileStorage := authHandler.profileStorage
+
+	profile, err := profileStorage.CreateProfile(ctx, user.ID)
 	if err != nil {
 		log.Println(err, responses.StatusInternalServerError)
 		responses.SendErrResponse(writer, logger, responses.StatusInternalServerError, responses.ErrInternalServer)
@@ -141,9 +142,8 @@ func (authHandler *AuthHandler) Signup(writer http.ResponseWriter, request *http
 		return
 	}
 
-	profileStorage := authHandler.profileStorage
-
-	profile, err := profileStorage.CreateProfile(ctx, user.ID)
+	sessionID := uuid.NewString()
+	err = storage.CreateSession(ctx, sessionID, user.ID)
 	if err != nil {
 		log.Println(err, responses.StatusInternalServerError)
 		responses.SendErrResponse(writer, logger, responses.StatusInternalServerError, responses.ErrInternalServer)

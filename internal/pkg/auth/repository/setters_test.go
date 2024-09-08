@@ -13,12 +13,15 @@ import (
 
 func TestCreateUser(t *testing.T) {
 	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockPool := pgxpoolmock.NewMockPgxIface(ctrl)
 
 	email := "test@test.ru"
+	name := ""
+	surname := ""
 
 	tests := []struct {
 		name            string
@@ -65,7 +68,7 @@ func TestCreateUser(t *testing.T) {
 			expectedErr:     true,
 			expectedErrList: []string{"User with same email already exists"},
 			setup: func() {
-				pgxRows := pgxpoolmock.NewRow(uint(1), email, "")
+				pgxRows := pgxpoolmock.NewRow(uint(1), email, "", &name, &surname)
 				mockPool.EXPECT().
 					QueryRow(context.Background(), repository.GetUserByEmailQuery, email).
 					Return(pgxRows)
