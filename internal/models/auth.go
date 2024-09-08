@@ -13,12 +13,12 @@ type UserLoginRequest struct {
 
 type UserSignupRequest struct {
 	UserLoginRequest
-	PasswordRepeat string `json:"password_repeat"`
+	PasswordRepeat string `json:"passwordRepeat"`
 }
 
 type UserResponse struct {
-	IsAuth  bool   `json:"is_auth"`
+	IsAuth  bool   `json:"isAuth"`
 	User    User   `json:"user"`
 	Name    string `json:"name"`
-	Surname string `json:"surnname"`
+	Surname string `json:"surname"`
 }

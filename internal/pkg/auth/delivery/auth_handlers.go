@@ -9,6 +9,7 @@ import (
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/models"
 	session "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/auth/repository/session"
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/auth/usecases"
+	profileusecases "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/profile/usecases"
 	responses "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/delivery"
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/utils"
 	"github.com/google/uuid"
@@ -16,12 +17,15 @@ import (
 )
 
 type AuthHandler struct {
-	storage usecases.AuthStorageInterface
+	storage        usecases.AuthStorageInterface
+	profileStorage profileusecases.ProfileStorageInterface
 }
 
-func NewAuthHandler(storage usecases.AuthStorageInterface) *AuthHandler {
+func NewAuthHandler(storage usecases.AuthStorageInterface,
+	profileStorage profileusecases.ProfileStorageInterface) *AuthHandler {
 	return &AuthHandler{
-		storage: storage,
+		storage:        storage,
+		profileStorage: profileStorage,
 	}
 }
 
@@ -59,7 +63,7 @@ func (authHandler *AuthHandler) Login(writer http.ResponseWriter, request *http.
 		return
 	}
 
-	if !utils.CheckPassword(requestData.Password, user.PasswordHash) {
+	if !utils.CheckPassword(requestData.Password, user.User.PasswordHash) {
 		log.Println("Wrong password", responses.StatusBadRequest)
 		responses.SendErrResponse(writer, logger, responses.StatusBadRequest, responses.ErrWrongCredentials)
 
@@ -67,7 +71,7 @@ func (authHandler *AuthHandler) Login(writer http.ResponseWriter, request *http.
 	}
 
 	sessionID := uuid.NewString()
-	err = storage.CreateSession(ctx, sessionID, user.ID)
+	err = storage.CreateSession(ctx, sessionID, user.User.ID)
 	if err != nil {
 		log.Println(err, responses.StatusInternalServerError)
 		responses.SendErrResponse(writer, logger, responses.StatusInternalServerError, responses.ErrInternalServer)
@@ -78,10 +82,8 @@ func (authHandler *AuthHandler) Login(writer http.ResponseWriter, request *http.
 	newSession := createSession(sessionID)
 	http.SetCookie(writer, newSession)
 
-	responses.SendOkResponse(writer, models.UserResponse{
-		User:   *user,
-		IsAuth: true,
-	})
+	user.IsAuth = true
+	responses.SendOkResponse(writer, user)
 }
 
 func (authHandler *AuthHandler) Logout(writer http.ResponseWriter, request *http.Request) {
@@ -139,12 +141,24 @@ func (authHandler *AuthHandler) Signup(writer http.ResponseWriter, request *http
 		return
 	}
 
+	profileStorage := authHandler.profileStorage
+
+	profile, err := profileStorage.CreateProfile(ctx, user.ID)
+	if err != nil {
+		log.Println(err, responses.StatusInternalServerError)
+		responses.SendErrResponse(writer, logger, responses.StatusInternalServerError, responses.ErrInternalServer)
+
+		return
+	}
+
 	newSession := createSession(sessionID)
 	http.SetCookie(writer, newSession)
 
 	responses.SendOkResponse(writer, models.UserResponse{
-		User:   *user,
-		IsAuth: true,
+		User:    *user,
+		IsAuth:  true,
+		Name:    profile.Name,
+		Surname: profile.Surname,
 	})
 }
 
@@ -167,8 +181,7 @@ func (authHandler *AuthHandler) CheckAuth(writer http.ResponseWriter, request *h
 		return
 	}
 
-	responses.SendOkResponse(writer, models.UserResponse{
-		User:   *user,
-		IsAuth: true,
-	})
+	user.IsAuth = true
+
+	responses.SendOkResponse(writer, user)
 }

@@ -9,6 +9,7 @@ import (
 
 	authrepo "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/auth/repository"
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/config"
+	profilerepo "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/profile/repository"
 	myrouter "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/delivery/routers"
 	pool "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/repository"
 	logger "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/usecases"
@@ -45,6 +46,10 @@ func createServer(config serverConfig) *http.Server {
 func (srv *Server) Run() error {
 	cfgPath := os.Getenv("CONFIG_PATH")
 	cfg := config.ReadConfig(cfgPath)
+	if cfg == nil {
+		log.Fatal("The config wasn`t opened")
+		os.Exit(1)
+	}
 
 	logger, err := logger.NewLogger(strings.Split(config.OutputLogPath, " "),
 		strings.Split(config.ErrorOutputLogPath, " "))
@@ -65,8 +70,9 @@ func (srv *Server) Run() error {
 	redisClient := pool.NewRedisClient(cfg.Redis.Host, cfg.Redis.Port, cfg.Redis.Password)
 
 	authStorage := authrepo.NewAuthStorage(postgresPool, redisClient)
+	profileStorage := profilerepo.NewProfileStorage(postgresPool)
 
-	router := myrouter.NewRouter(logger, authStorage)
+	router := myrouter.NewRouter(logger, authStorage, profileStorage)
 
 	credentials := handlers.AllowCredentials()
 	headersOk := handlers.AllowedHeaders(cfg.Server.Headers)

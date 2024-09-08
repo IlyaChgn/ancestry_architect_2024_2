@@ -7,9 +7,9 @@ import (
 )
 
 type AuthStorageInterface interface {
-	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
-	GetUserByID(ctx context.Context, id uint) (*models.User, error)
-	GetUserBySessionID(ctx context.Context, sessionID string) (*models.User, error)
+	GetUserByEmail(ctx context.Context, email string) (*models.UserResponse, error)
+	GetUserByID(ctx context.Context, id uint) (*models.UserResponse, error)
+	GetUserBySessionID(ctx context.Context, sessionID string) (*models.UserResponse, error)
 
 	CreateSession(ctx context.Context, sessionID string, userID uint) error
 	RemoveSession(ctx context.Context, sessionID string) error

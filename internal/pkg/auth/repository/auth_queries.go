@@ -2,15 +2,19 @@ package repository
 
 const (
 	GetUserByEmailQuery = `
-		SELECT id, email, password_hash
-		FROM public.user
-		WHERE email = $1;
+		SELECT u.id, u.email, u.password_hash, p.name, p.surname
+		FROM public.user u
+		JOIN public.profile p
+		ON u.id = p.user_id
+		WHERE u.email = $1;
 		`
 
 	GetUserByIDQuery = `
-		SELECT id, email, password_hash
-		FROM public.user
-		WHERE id = $1;
+		SELECT u.id, u.email, u.password_hash, p.name, p.surname
+		FROM public.user u
+		JOIN public.profile p
+		ON u.id = p.user_id
+		WHERE u.id = $1;
 		`
 
 	CreateUserQuery = `

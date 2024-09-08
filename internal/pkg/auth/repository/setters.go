@@ -10,9 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const (
-	errUserAlreadyExists = "User with same email already exists"
-)
+const ()
 
 func (storage *AuthStorage) CreateUser(ctx context.Context, email, password,
 	passwordRepeat string) (*models.User, []string) {
@@ -20,7 +18,7 @@ func (storage *AuthStorage) CreateUser(ctx context.Context, email, password,
 
 	oldUser, _ := storage.GetUserByEmail(ctx, email)
 	if oldUser != nil {
-		return nil, []string{errUserAlreadyExists}
+		return nil, []string{ErrUserAlreadyExists}
 	}
 
 	errs := utils.Validate(email, password, passwordRepeat)
@@ -31,7 +29,6 @@ func (storage *AuthStorage) CreateUser(ctx context.Context, email, password,
 	var user models.User
 
 	line := storage.pool.QueryRow(ctx, CreateUserQuery, email, utils.HashPassword(password))
-
 	if err := line.Scan(&user.ID, &user.Email); err != nil {
 		customErr := fmt.Errorf("something went wrong while creating user, %v", err)
 

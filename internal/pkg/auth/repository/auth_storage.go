@@ -6,7 +6,10 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-const ErrUserNotExists = "User doesn`t exist"
+const (
+	ErrUserNotExists     = "User doesn`t exist"
+	ErrUserAlreadyExists = "User with same email already exists"
+)
 
 type AuthStorage struct {
 	manager *session.SessionManager
