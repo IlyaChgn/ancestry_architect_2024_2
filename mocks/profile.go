@@ -66,16 +66,16 @@ func (mr *MockProfileStorageInterfaceMockRecorder) GetProfileByID(ctx, id interf
 }
 
 // UpdateProfile mocks base method.
-func (m *MockProfileStorageInterface) UpdateProfile(ctx context.Context, profile *models.Profile) (*models.Profile, error) {
+func (m *MockProfileStorageInterface) UpdateProfile(ctx context.Context, profile *models.UpdateProfileRequest, userID uint) (*models.Profile, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateProfile", ctx, profile)
+	ret := m.ctrl.Call(m, "UpdateProfile", ctx, profile, userID)
 	ret0, _ := ret[0].(*models.Profile)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateProfile indicates an expected call of UpdateProfile.
-func (mr *MockProfileStorageInterfaceMockRecorder) UpdateProfile(ctx, profile interface{}) *gomock.Call {
+func (mr *MockProfileStorageInterfaceMockRecorder) UpdateProfile(ctx, profile, userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockProfileStorageInterface)(nil).UpdateProfile), ctx, profile)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockProfileStorageInterface)(nil).UpdateProfile), ctx, profile, userID)
 }

@@ -9,6 +9,7 @@ import (
 const (
 	ErrUserNotExists     = "User doesn`t exist"
 	ErrUserAlreadyExists = "User with same email already exists"
+	ErrWrongEmailFormat  = "Wrong email format"
 )
 
 type AuthStorage struct {

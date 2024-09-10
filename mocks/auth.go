@@ -122,3 +122,18 @@ func (mr *MockAuthStorageInterfaceMockRecorder) RemoveSession(ctx, sessionID int
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveSession", reflect.TypeOf((*MockAuthStorageInterface)(nil).RemoveSession), ctx, sessionID)
 }
+
+// UpdateEmail mocks base method.
+func (m *MockAuthStorageInterface) UpdateEmail(ctx context.Context, email string, userID uint) (*models.User, []string) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateEmail", ctx, email, userID)
+	ret0, _ := ret[0].(*models.User)
+	ret1, _ := ret[1].([]string)
+	return ret0, ret1
+}
+
+// UpdateEmail indicates an expected call of UpdateEmail.
+func (mr *MockAuthStorageInterfaceMockRecorder) UpdateEmail(ctx, email, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEmail", reflect.TypeOf((*MockAuthStorageInterface)(nil).UpdateEmail), ctx, email, userID)
+}

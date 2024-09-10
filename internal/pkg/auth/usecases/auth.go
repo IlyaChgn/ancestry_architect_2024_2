@@ -14,4 +14,5 @@ type AuthStorageInterface interface {
 	CreateSession(ctx context.Context, sessionID string, userID uint) error
 	RemoveSession(ctx context.Context, sessionID string) error
 	CreateUser(ctx context.Context, email, password, passwordRepeat string) (*models.User, []string)
+	UpdateEmail(ctx context.Context, email string, userID uint) (*models.User, []string)
 }

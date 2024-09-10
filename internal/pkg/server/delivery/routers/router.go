@@ -21,7 +21,7 @@ func NewRouter(logger *zap.SugaredLogger,
 	router.Use(mylogger.CreateLogMiddleware(logger))
 
 	authHandler := authdel.NewAuthHandler(authStorage, profileStorage)
-	profileHandler := profiledel.NewProfileHandler(profileStorage)
+	profileHandler := profiledel.NewProfileHandler(profileStorage, authStorage)
 
 	loginRequiredMiddleware := myauth.LoginRequiredMiddleware(authStorage)
 	logoutRequiredMiddleware := myauth.LogoutRequiredMiddleware(authStorage)

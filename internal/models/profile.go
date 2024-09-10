@@ -1,6 +1,7 @@
 package models
 
 import (
+	"mime/multipart"
 	"time"
 
 	"github.com/jackc/pgtype"
@@ -24,9 +25,15 @@ type ProfileNullData struct {
 }
 
 type UpdateProfileRequest struct {
-	Name       string
-	Surname    string
-	Birthdate  time.Time
-	Gender     string
-	AvatarPath string
+	Email     string
+	Name      string
+	Surname   string
+	Birthdate time.Time
+	Gender    string
+	Avatar    *multipart.FileHeader
+}
+
+type UpdateProfileResponse struct {
+	User    User    `json:"user"`
+	Profile Profile `json:"profile"`
 }

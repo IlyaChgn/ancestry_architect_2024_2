@@ -18,7 +18,7 @@ const (
 	maxLen = 32
 )
 
-func validateEmail(email string) bool {
+func ValidateEmail(email string) bool {
 	_, err := mail.ParseAddress(email)
 
 	return err == nil
@@ -58,7 +58,7 @@ func Validate(email, password, passwordRepeat string) []string {
 		errors = append(errors, ErrDoNotMatch)
 	}
 
-	if !validateEmail(email) {
+	if !ValidateEmail(email) {
 		errors = append(errors, ErrWrongEmailFormat)
 	}
 

@@ -48,3 +48,36 @@ func (storage *AuthStorage) CreateSession(ctx context.Context, sessionID string,
 func (storage *AuthStorage) RemoveSession(ctx context.Context, sessionID string) error {
 	return storage.manager.RemoveSession(ctx, sessionID)
 }
+
+func (storage *AuthStorage) UpdateEmail(ctx context.Context, email string, userID uint) (*models.User, []string) {
+	logger := utils.GetLoggerFromContext(ctx).With(zap.String("storage", utils.GetFunctionName()))
+
+	var errs []string
+
+	oldUser, _ := storage.GetUserByEmail(ctx, email)
+	if oldUser != nil && oldUser.User.ID != userID {
+		errs = append(errs, ErrUserAlreadyExists)
+	}
+
+	if !utils.ValidateEmail(email) {
+		errs = append(errs, ErrWrongEmailFormat)
+	}
+
+	if errs != nil {
+		return nil, errs
+	}
+
+	var user models.User
+
+	line := storage.pool.QueryRow(ctx, UpdateEmailQuery, email, userID)
+	if err := line.Scan(&user.ID, &user.Email); err != nil {
+		customErr := fmt.Errorf("something went wrong while creating user, %v", err)
+
+		utils.LogError(logger, customErr)
+		log.Println(customErr)
+
+		return nil, []string{fmt.Sprintf("%v", customErr)}
+	}
+
+	return &user, nil
+}

@@ -10,5 +10,5 @@ type ProfileStorageInterface interface {
 	GetProfileByID(ctx context.Context, id uint) (*models.Profile, error)
 
 	CreateProfile(ctx context.Context, userID uint) (*models.Profile, error)
-	UpdateProfile(ctx context.Context, profile *models.Profile) (*models.Profile, error)
+	UpdateProfile(ctx context.Context, profile *models.UpdateProfileRequest, userID uint) (*models.Profile, error)
 }

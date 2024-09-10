@@ -71,6 +71,7 @@ func (authHandler *AuthHandler) Login(writer http.ResponseWriter, request *http.
 	}
 
 	sessionID := uuid.NewString()
+
 	err = storage.CreateSession(ctx, sessionID, user.User.ID)
 	if err != nil {
 		log.Println(err, responses.StatusInternalServerError)
@@ -93,8 +94,8 @@ func (authHandler *AuthHandler) Logout(writer http.ResponseWriter, request *http
 	session, _ := request.Cookie("session_id")
 
 	storage := authHandler.storage
-	err := storage.RemoveSession(ctx, session.Value)
 
+	err := storage.RemoveSession(ctx, session.Value)
 	if err != nil {
 		log.Println("User not authorized", responses.StatusBadRequest)
 		responses.SendErrResponse(writer, logger, responses.StatusBadRequest, responses.ErrNotAuthorized)
@@ -143,6 +144,7 @@ func (authHandler *AuthHandler) Signup(writer http.ResponseWriter, request *http
 	}
 
 	sessionID := uuid.NewString()
+
 	err = storage.CreateSession(ctx, sessionID, user.ID)
 	if err != nil {
 		log.Println(err, responses.StatusInternalServerError)

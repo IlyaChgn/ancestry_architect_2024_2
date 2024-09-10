@@ -27,3 +27,4 @@ err_logs.json
 .env
 *.drawio
 *.drawio.bkp
+uploads

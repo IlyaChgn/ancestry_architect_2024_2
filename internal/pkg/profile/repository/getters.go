@@ -22,6 +22,7 @@ func (storage *ProfileStorage) GetProfileByID(ctx context.Context, id uint) (*mo
 	if err := line.Scan(&profile.ID, &profile.UserID, &nullProfile.Name, &nullProfile.Surname, &profile.Birthdate,
 		&nullProfile.Gender, &nullProfile.AvatarPath); err != nil {
 		customErr := fmt.Errorf("something went wrong while scanning line, %v", err)
+
 		utils.LogError(logger, customErr)
 		log.Println(customErr)
 

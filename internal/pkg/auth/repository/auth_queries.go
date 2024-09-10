@@ -23,4 +23,11 @@ const (
 		VALUES ($1, $2)
 		RETURNING id, email;
 		`
+
+	UpdateEmailQuery = `
+		UPDATE public.user
+		SET email = $1
+		WHERE id = $2
+		RETURNING id, email;
+		`
 )
