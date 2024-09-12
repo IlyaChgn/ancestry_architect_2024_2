@@ -116,7 +116,7 @@ func (storage *ProfileStorage) updateProfileAvatar(ctx context.Context, avatar *
 		os.Remove(oldPath)
 	}
 
-	newPath, err := utils.WriteFile(avatar, "avatar")
+	newPath, err := utils.WriteFile(avatar, storage.staticDirectory, "avatar")
 	if err != nil {
 		customErr := fmt.Errorf("something went wrong while writing avatar, %v", err)
 

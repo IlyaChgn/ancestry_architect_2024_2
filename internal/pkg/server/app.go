@@ -70,7 +70,7 @@ func (srv *Server) Run() error {
 	redisClient := pool.NewRedisClient(cfg.Redis.Host, cfg.Redis.Port, cfg.Redis.Password)
 
 	authStorage := authrepo.NewAuthStorage(postgresPool, redisClient)
-	profileStorage := profilerepo.NewProfileStorage(postgresPool)
+	profileStorage := profilerepo.NewProfileStorage(postgresPool, os.Getenv("STATIC_DIRECTORY"))
 
 	router := myrouter.NewRouter(logger, authStorage, profileStorage)
 

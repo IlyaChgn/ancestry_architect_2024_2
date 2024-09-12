@@ -10,16 +10,10 @@ import (
 )
 
 const (
-	staticDirectory = "./uploads"
-	quality         = 90
-	filenameLen     = 8
-	startX          = 0
-	startY          = 0
-	endX            = 215
-	endY            = 295
+	filenameLen = 8
 )
 
-func WriteFile(file *multipart.FileHeader, folderName string) (string, error) {
+func WriteFile(file *multipart.FileHeader, staticDirectory, folderName string) (string, error) {
 	uploadedFile, err := file.Open()
 	if err != nil {
 		return "", err
@@ -39,9 +33,9 @@ func WriteFile(file *multipart.FileHeader, folderName string) (string, error) {
 
 	extension := filepath.Ext(file.Filename)
 	filename := RandString(filenameLen) + extension
-	fullpath := dirName + "/" + filename
+	fullPath := dirName + "/" + filename
 
-	destination, err := os.Create(fullpath)
+	destination, err := os.Create(fullPath)
 	if err != nil {
 		return "", err
 	}
@@ -52,5 +46,5 @@ func WriteFile(file *multipart.FileHeader, folderName string) (string, error) {
 		return "", err
 	}
 
-	return fullpath, nil
+	return fullPath, nil
 }
