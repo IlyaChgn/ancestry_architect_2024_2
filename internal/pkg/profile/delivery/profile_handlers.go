@@ -83,8 +83,8 @@ func (profileHandler *ProfileHandler) UpdateProfile(writer http.ResponseWriter, 
 	if request.FormValue("birthdate") != "" {
 		birthdate, err = time.Parse("02/01/2006", request.FormValue("birthdate"))
 		if err != nil {
-			log.Println(err, responses.StatusInternalServerError)
-			responses.SendErrResponse(writer, logger, responses.StatusInternalServerError, responses.ErrInternalServer)
+			log.Println(err, responses.StatusBadRequest)
+			responses.SendErrResponse(writer, logger, responses.StatusBadRequest, responses.ErrBadRequest)
 
 			return
 		}

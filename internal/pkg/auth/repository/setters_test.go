@@ -111,3 +111,82 @@ func TestCreateUser(t *testing.T) {
 		})
 	}
 }
+
+func TestUpdateEmail(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockPool := pgxpoolmock.NewMockPgxIface(ctrl)
+
+	email := "test@test.ru"
+	name := ""
+	surname := ""
+
+	tests := []struct {
+		name            string
+		user            *models.User
+		expected        *models.User
+		expectedErr     bool
+		expectedErrList []string
+		setup           func()
+	}{
+		{
+			name: "successful test",
+			user: &models.User{
+				ID:    1,
+				Email: email,
+			},
+			expected: &models.User{
+				ID:    1,
+				Email: email,
+			},
+			expectedErr: false,
+			setup: func() {
+				mockPool.EXPECT().
+					QueryRow(context.Background(), repository.GetUserByEmailQuery, email).
+					Return(models.EmptyRow{})
+				pgxRows := pgxpoolmock.NewRow(uint(1), email)
+				mockPool.EXPECT().
+					QueryRow(context.Background(), repository.UpdateEmailQuery, email, uint(1)).
+					Return(pgxRows)
+			},
+		},
+		{
+			name: "test user already exists",
+			user: &models.User{
+				ID:    1,
+				Email: email,
+			},
+			expected: &models.User{
+				ID:    1,
+				Email: email,
+			},
+			expectedErr:     true,
+			expectedErrList: []string{"User with same email already exists"},
+			setup: func() {
+				pgxRows := pgxpoolmock.NewRow(uint(2), email, "", &name, &surname)
+				mockPool.EXPECT().
+					QueryRow(context.Background(), repository.GetUserByEmailQuery, email).
+					Return(pgxRows)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.setup()
+
+			storage := repository.NewAuthStorage(mockPool, nil)
+
+			got, err := storage.UpdateEmail(context.Background(), tt.user.Email, tt.user.ID)
+			if tt.expectedErr {
+				assert.Equal(t, tt.expectedErrList, err)
+			} else {
+				assert.Nil(t, err)
+				assert.Equal(t, tt.expected, got)
+			}
+		})
+	}
+}
