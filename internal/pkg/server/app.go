@@ -1,6 +1,8 @@
 package server
 
 import (
+	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/node/repository"
+	treerepo "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/tree/repository"
 	"log"
 	"net/http"
 	"os"
@@ -12,7 +14,7 @@ import (
 	profilerepo "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/profile/repository"
 	myrouter "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/delivery/routers"
 	pool "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/repository"
-	logger "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/usecases"
+	logging "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/usecases"
 	"github.com/gorilla/handlers"
 )
 
@@ -48,14 +50,12 @@ func (srv *Server) Run() error {
 	cfg := config.ReadConfig(cfgPath)
 	if cfg == nil {
 		log.Fatal("The config wasn`t opened")
-		os.Exit(1)
 	}
 
-	logger, err := logger.NewLogger(strings.Split(config.OutputLogPath, " "),
+	logger, err := logging.NewLogger(strings.Split(config.OutputLogPath, " "),
 		strings.Split(config.ErrorOutputLogPath, " "))
 	if err != nil {
 		log.Fatal("Something went wrong while creating logger: ", err)
-		os.Exit(1)
 	}
 
 	postgresURL := pool.NewConnectionString(cfg.Postgres.Username, cfg.Postgres.Password,
@@ -64,15 +64,16 @@ func (srv *Server) Run() error {
 	postgresPool, err := pool.NewPostgresPool(postgresURL)
 	if err != nil {
 		log.Fatal("Something went wrong while connecting to postgres database: ", err)
-		os.Exit(1)
 	}
 
 	redisClient := pool.NewRedisClient(cfg.Redis.Host, cfg.Redis.Port, cfg.Redis.Password)
 
 	authStorage := authrepo.NewAuthStorage(postgresPool, redisClient)
 	profileStorage := profilerepo.NewProfileStorage(postgresPool, os.Getenv("STATIC_DIRECTORY"))
+	treeStorage := treerepo.NewTreeStorage(postgresPool)
+	nodeStorage := repository.NewNodeStorage(postgresPool, os.Getenv("STATIC_DIRECTORY"))
 
-	router := myrouter.NewRouter(logger, authStorage, profileStorage)
+	router := myrouter.NewRouter(logger, authStorage, profileStorage, treeStorage, nodeStorage)
 
 	credentials := handlers.AllowCredentials()
 	headersOk := handlers.AllowedHeaders(cfg.Server.Headers)
@@ -84,7 +85,7 @@ func (srv *Server) Run() error {
 	serverCfg := createServerConfig(cfg.Server.Host+cfg.Server.Port, cfg.Server.Timeout, &muxWithCORS)
 	srv.server = createServer(serverCfg)
 
-	log.Println("Server is running on port", cfg.Server.Host+cfg.Server.Port)
+	log.Printf("Server is listening on %s\n", cfg.Server.Host+cfg.Server.Port)
 
 	return srv.server.ListenAndServe()
 }
