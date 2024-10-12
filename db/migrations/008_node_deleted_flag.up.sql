@@ -1,0 +1,4 @@
+ALTER TABLE public.node
+ADD COLUMN IF NOT EXISTS  is_deleted BOOLEAN
+    NOT NULL
+    DEFAULT FALSE;
