@@ -43,8 +43,8 @@ func (storage *NodeStorage) CreateNode(ctx context.Context, nodeData *models.Cre
 			return nil, err
 		}
 
-		node.Children = nodeData.Relatives.Children
-		node.Spouses = nodeData.Relatives.Spouses
+		node.Relatives.Children = nodeData.Relatives.Children
+		node.Relatives.Spouses = nodeData.Relatives.Spouses
 	}
 
 	additional, err := storage.writeAdditionalData(ctx, &nodeData.Addition, node.ID)
@@ -107,6 +107,8 @@ func (storage *NodeStorage) createNonRootNode(ctx context.Context,
 		relative, err = storage.getRelativeNode(ctx, nodeData.Relatives.Parents[0])
 	case nodeData.Relatives.Spouses != nil:
 		relative, err = storage.getRelativeNode(ctx, nodeData.Relatives.Spouses[0])
+	case nodeData.Relatives.Siblings != nil:
+		relative, err = storage.getRelativeNode(ctx, nodeData.Relatives.Siblings[0])
 	default:
 		customErr := fmt.Errorf("wrong node data: expected one of siblings, children, or spouse")
 

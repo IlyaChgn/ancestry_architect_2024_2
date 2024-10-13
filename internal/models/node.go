@@ -9,13 +9,14 @@ type CreateNodeRequest struct {
 	TreeID      uint             `json:"treeID"`
 	Name        string           `json:"name"`
 	Addition    AdditionDataList `json:"addition"`
-	Relatives   RelativesList    `json:"relatives"`
+	Relatives   GetRelativesList `json:"relatives"`
 }
 
-type RelativesList struct {
+type GetRelativesList struct {
 	Children []uint `json:"children"`
 	Parents  []uint `json:"parents"`
 	Spouses  []uint `json:"spouses"`
+	Siblings []uint `json:"siblings"`
 }
 
 type AdditionDataList struct {
@@ -25,14 +26,18 @@ type AdditionDataList struct {
 }
 
 type Node struct {
-	ID          uint         `json:"id"`
-	LayerID     uint         `json:"layerID"`
-	Name        string       `json:"name"`
-	Birthdate   *pgtype.Date `json:"birthdate"`
-	Deathdate   *pgtype.Date `json:"deathdate"`
-	PreviewPath string       `json:"previewPath"`
-	Children    []uint       `json:"children"`
-	Spouses     []uint       `json:"spouses"`
+	ID          uint              `json:"id"`
+	LayerID     uint              `json:"layerID"`
+	Name        string            `json:"name"`
+	Birthdate   *pgtype.Date      `json:"birthdate"`
+	Deathdate   *pgtype.Date      `json:"deathdate"`
+	PreviewPath string            `json:"previewPath"`
+	Relatives   SendRelativesList `json:"relatives"`
+}
+
+type SendRelativesList struct {
+	Spouses  []uint `json:"spouses"`
+	Children []uint `json:"children"`
 }
 
 type DescriptionResponse struct {

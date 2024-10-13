@@ -65,7 +65,7 @@ func (storage *NodeStorage) DeleteNode(ctx context.Context, nodeID uint) error {
 	return nil
 }
 
-func (storage *NodeStorage) writeRelatives(ctx context.Context, relatives *models.RelativesList,
+func (storage *NodeStorage) writeRelatives(ctx context.Context, relatives *models.GetRelativesList,
 	nodeID uint) error {
 	logger := utils.GetLoggerFromContext(ctx).With(zap.String("storage", utils.GetFunctionName()))
 

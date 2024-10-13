@@ -60,7 +60,15 @@ func (treeHandler *TreeHandler) GetTree(writer http.ResponseWriter, request *htt
 		return
 	}
 
-	responses.SendOkResponse(writer, "as")
+	tree, err := storage.GetTree(ctx, uint(treeID))
+	if err != nil {
+		log.Println(err, responses.StatusBadRequest)
+		responses.SendErrResponse(writer, logger, responses.StatusBadRequest, responses.ErrBadRequest)
+
+		return
+	}
+
+	responses.SendOkResponse(writer, tree)
 }
 
 func (treeHandler *TreeHandler) GetCreatedTreesList(writer http.ResponseWriter, request *http.Request) {
