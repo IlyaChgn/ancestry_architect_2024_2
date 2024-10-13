@@ -6,13 +6,17 @@ import (
 )
 
 func ServeNodeRouter(router *mux.Router, nodeHandler *nodedel.NodeHandler,
-	loginRequiredMiddleware mux.MiddlewareFunc) {
+	loginRequiredMiddleware, permissionRequiredMiddleware mux.MiddlewareFunc) {
 	subrouter := router.PathPrefix("/node").Subrouter()
 	subrouter.Use(loginRequiredMiddleware)
 
-	subrouter.HandleFunc("/{id:[0-9]+}/description", nodeHandler.GetDescription).Methods("GET")
+	subrouterPermissionRequired := subrouter.PathPrefix("/{id:[0-9]+}").Subrouter()
+	subrouterPermissionRequired.Use(permissionRequiredMiddleware)
 
-	subrouter.HandleFunc("/create", nodeHandler.CreateNode).Methods("POST") // tree_id in query
-	subrouter.HandleFunc("/{id:[0-9]+}", nodeHandler.DeleteNode).Methods("DELETE")
-	subrouter.HandleFunc("/{id:[0-9]+}", nodeHandler.EditNode).Methods("POST")
+	subrouterPermissionRequired.HandleFunc("/description", nodeHandler.GetDescription).Methods("GET")
+	subrouterPermissionRequired.HandleFunc("", nodeHandler.DeleteNode).Methods("DELETE")
+	subrouterPermissionRequired.HandleFunc("", nodeHandler.EditNode).Methods("POST")
+	subrouterPermissionRequired.HandleFunc("/preview", nodeHandler.UpdateAvatar).Methods("POST")
+
+	subrouter.HandleFunc("/create", nodeHandler.CreateNode).Methods("POST")
 }

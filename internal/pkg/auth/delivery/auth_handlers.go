@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/models"
-	session "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/auth/repository/session"
+	sessionrepo "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/auth/repository/session"
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/auth/usecases"
 	profileusecases "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/profile/usecases"
 	responses "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/delivery"
@@ -34,7 +34,7 @@ func createSession(sessionID string) *http.Cookie {
 		Name:     "session_id",
 		Value:    sessionID,
 		Path:     "/",
-		Expires:  time.Now().Add(session.SessionDuration),
+		Expires:  time.Now().Add(sessionrepo.SessionDuration),
 		HttpOnly: true,
 	}
 }

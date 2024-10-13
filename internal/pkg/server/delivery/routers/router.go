@@ -5,6 +5,7 @@ import (
 	authusecases "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/auth/usecases"
 	myauth "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/middleware/auth"
 	mylogger "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/middleware/log"
+	mynode "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/middleware/node"
 	myrecovery "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/middleware/recover"
 	nodedel "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/node/delivery"
 	nodeusecases "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/node/usecases"
@@ -27,16 +28,17 @@ func NewRouter(logger *zap.SugaredLogger,
 	authHandler := authdel.NewAuthHandler(authStorage, profileStorage)
 	profileHandler := profiledel.NewProfileHandler(profileStorage, authStorage)
 	treeHandler := treedel.NewTreeHandler(treeStorage, authStorage)
-	nodeHandler := nodedel.NewNodeHandler(nodeStorage, authStorage)
+	nodeHandler := nodedel.NewNodeHandler(nodeStorage, treeStorage, authStorage)
 
 	loginRequiredMiddleware := myauth.LoginRequiredMiddleware(authStorage)
 	logoutRequiredMiddleware := myauth.LogoutRequiredMiddleware(authStorage)
+	permissionRequiredMiddleware := mynode.PermissionRequiredMiddleware(nodeStorage, authStorage)
 
 	rootRouter := router.PathPrefix("/api").Subrouter()
 	ServeAuthRouter(rootRouter, authHandler, loginRequiredMiddleware, logoutRequiredMiddleware)
 	ServeProfileRouter(rootRouter, profileHandler, loginRequiredMiddleware)
 	ServeTreeRouter(rootRouter, treeHandler, loginRequiredMiddleware)
-	ServeNodeRouter(rootRouter, nodeHandler, loginRequiredMiddleware)
+	ServeNodeRouter(rootRouter, nodeHandler, loginRequiredMiddleware, permissionRequiredMiddleware)
 
 	return router
 }
