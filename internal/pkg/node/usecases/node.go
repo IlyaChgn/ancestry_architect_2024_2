@@ -14,4 +14,5 @@ type NodeStorageInterface interface {
 	CreateNode(ctx context.Context, node *models.CreateNodeRequest) (*models.Node, error)
 	DeleteNode(ctx context.Context, nodeID uint) error
 	UpdatePreview(ctx context.Context, preview *multipart.FileHeader, nodeID uint) (string, error)
+	EditNode(ctx context.Context, editedNode *models.EditNodeRequest, nodeID uint) (*models.EditNodeResponse, error)
 }

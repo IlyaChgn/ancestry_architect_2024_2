@@ -45,6 +45,19 @@ type DescriptionResponse struct {
 	Description string `json:"description"`
 }
 
+type EditNodeRequest struct {
+	Name        string `json:"name"`
+	Birthdate   string `json:"birthdate"`
+	Deathdate   string `json:"deathdate"`
+	Description string `json:"description"`
+}
+
+type EditNodeResponse struct {
+	Name      string       `json:"name"`
+	Birthdate *pgtype.Date `json:"birthdate"`
+	Deathdate *pgtype.Date `json:"deathdate"`
+}
+
 type UpdatePreviewResponse struct {
 	ID          uint   `json:"id"`
 	PreviewPath string `json:"previewPath"`

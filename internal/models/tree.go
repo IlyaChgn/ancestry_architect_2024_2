@@ -11,8 +11,8 @@ type TreeResponse struct {
 }
 
 type AddPermissionRequest struct {
-	TreeID uint `json:"treeID"`
-	UserID uint `json:"userID"`
+	TreeID uint   `json:"treeID"`
+	Email  string `json:"email"`
 }
 
 type SuccessResponse struct {

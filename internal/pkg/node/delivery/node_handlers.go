@@ -148,7 +148,35 @@ func (nodeHandler *NodeHandler) UpdateAvatar(writer http.ResponseWriter, request
 	responses.SendOkResponse(writer, response)
 }
 
-func (nodeHandler *NodeHandler) EditNode(writer http.ResponseWriter, request *http.Request) {}
+func (nodeHandler *NodeHandler) EditNode(writer http.ResponseWriter, request *http.Request) {
+	ctx := request.Context()
+	logger := utils.GetLoggerFromContext(ctx).With(zap.String("handler", utils.GetFunctionName()))
+
+	vars := mux.Vars(request)
+	nodeID, _ := strconv.Atoi(vars["id"])
+
+	var requestData models.EditNodeRequest
+
+	err := json.NewDecoder(request.Body).Decode(&requestData)
+	if err != nil {
+		log.Println(err, responses.StatusInternalServerError)
+		responses.SendErrResponse(writer, logger, responses.StatusInternalServerError, responses.ErrInternalServer)
+
+		return
+	}
+
+	storage := nodeHandler.storage
+
+	node, err := storage.EditNode(ctx, &requestData, uint(nodeID))
+	if err != nil {
+		log.Println(err, responses.StatusBadRequest)
+		responses.SendErrResponse(writer, logger, responses.StatusBadRequest, responses.ErrBadRequest)
+
+		return
+	}
+
+	responses.SendOkResponse(writer, node)
+}
 
 func (nodeHandler *NodeHandler) DeleteNode(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()

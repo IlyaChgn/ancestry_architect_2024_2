@@ -14,7 +14,7 @@ func ServeTreeRouter(router *mux.Router, treeHandler *treedel.TreeHandler,
 	subrouter.HandleFunc("/list/available", treeHandler.GetAvailableTreesList).Methods("GET")
 	subrouter.HandleFunc("/list/created", treeHandler.GetCreatedTreesList).Methods("GET")
 
-	subrouter.HandleFunc("/create", treeHandler.CreateTree).Methods("POST")
+	subrouter.HandleFunc("", treeHandler.CreateTree).Methods("POST")
 
 	subrouter.HandleFunc("/permission", treeHandler.AddPermission).Methods("POST")
 }

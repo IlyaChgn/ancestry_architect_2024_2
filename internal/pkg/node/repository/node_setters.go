@@ -65,6 +65,72 @@ func (storage *NodeStorage) DeleteNode(ctx context.Context, nodeID uint) error {
 	return nil
 }
 
+func (storage *NodeStorage) EditNode(ctx context.Context, editedNode *models.EditNodeRequest,
+	nodeID uint) (*models.EditNodeResponse, error) {
+	logger := utils.GetLoggerFromContext(ctx).With(zap.String("storage", utils.GetFunctionName()))
+
+	var (
+		err  error
+		node models.EditNodeResponse
+	)
+
+	if editedNode.Name != "" {
+		err = storage.updateName(ctx, editedNode.Name, nodeID)
+		if err != nil {
+			customErr := fmt.Errorf("something went wrong while updating name, %v", err)
+
+			utils.LogError(logger, customErr)
+			log.Println(customErr)
+
+			return nil, err
+		}
+
+		node.Name = editedNode.Name
+	}
+
+	if editedNode.Birthdate != "" {
+		birthdate, err := storage.updateBirthdate(ctx, editedNode.Birthdate, nodeID)
+		if err != nil {
+			customErr := fmt.Errorf("something went wrong while updating birthdate, %v", err)
+
+			utils.LogError(logger, customErr)
+			log.Println(customErr)
+
+			return nil, err
+		}
+
+		node.Birthdate = birthdate
+	}
+
+	if editedNode.Deathdate != "" {
+		deathdate, err := storage.updateDeathdate(ctx, editedNode.Deathdate, nodeID)
+		if err != nil {
+			customErr := fmt.Errorf("something went wrong while updating deathdate, %v", err)
+
+			utils.LogError(logger, customErr)
+			log.Println(customErr)
+
+			return nil, err
+		}
+
+		node.Deathdate = deathdate
+	}
+
+	if editedNode.Description != "" {
+		err = storage.updateDescription(ctx, editedNode.Description, nodeID)
+		if err != nil {
+			customErr := fmt.Errorf("something went wrong while updating description, %v", err)
+
+			utils.LogError(logger, customErr)
+			log.Println(customErr)
+
+			return nil, err
+		}
+	}
+
+	return &node, nil
+}
+
 func (storage *NodeStorage) writeRelatives(ctx context.Context, relatives *models.GetRelativesList,
 	nodeID uint) error {
 	logger := utils.GetLoggerFromContext(ctx).With(zap.String("storage", utils.GetFunctionName()))
@@ -260,6 +326,22 @@ func (storage *NodeStorage) updateDescription(ctx context.Context, description s
 	}
 
 	_, err := storage.pool.Exec(ctx, InsertDescriptionQuery, description, nodeID)
+	if err != nil {
+		customErr := fmt.Errorf("something went wrong while executing query, %v", err)
+
+		utils.LogError(logger, customErr)
+		log.Println(customErr)
+
+		return err
+	}
+
+	return nil
+}
+
+func (storage *NodeStorage) updateName(ctx context.Context, name string, nodeID uint) error {
+	logger := utils.GetLoggerFromContext(ctx).With(zap.String("storage", utils.GetFunctionName()))
+
+	_, err := storage.pool.Exec(ctx, UpdateNameQuery, name, nodeID)
 	if err != nil {
 		customErr := fmt.Errorf("something went wrong while executing query, %v", err)
 

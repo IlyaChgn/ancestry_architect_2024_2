@@ -11,8 +11,7 @@ func ServeProfileRouter(router *mux.Router, profileHandler *profiledel.ProfileHa
 
 	subrouterLoginRequired := subrouter.PathPrefix("").Subrouter()
 	subrouterLoginRequired.Use(loginRequiredMiddleware)
-	subrouterLoginRequired.HandleFunc("/edit", profileHandler.UpdateProfile).Methods("POST")
+	subrouterLoginRequired.HandleFunc("", profileHandler.UpdateProfile).Methods("POST")
 
 	subrouter.HandleFunc("/{id:[0-9]+}", profileHandler.GetProfile).Methods("GET")
-
 }

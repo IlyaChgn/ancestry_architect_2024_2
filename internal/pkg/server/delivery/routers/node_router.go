@@ -18,5 +18,5 @@ func ServeNodeRouter(router *mux.Router, nodeHandler *nodedel.NodeHandler,
 	subrouterPermissionRequired.HandleFunc("", nodeHandler.EditNode).Methods("POST")
 	subrouterPermissionRequired.HandleFunc("/preview", nodeHandler.UpdateAvatar).Methods("POST")
 
-	subrouter.HandleFunc("/create", nodeHandler.CreateNode).Methods("POST")
+	subrouter.HandleFunc("", nodeHandler.CreateNode).Methods("POST")
 }

@@ -156,7 +156,15 @@ func (treeHandler *TreeHandler) AddPermission(writer http.ResponseWriter, reques
 
 	storage := treeHandler.storage
 
-	err = storage.AddPermission(ctx, requestData.UserID, requestData.TreeID)
+	user, err := treeHandler.authStorage.GetUserByEmail(ctx, requestData.Email)
+	if err != nil {
+		log.Println(err, responses.StatusBadRequest)
+		responses.SendErrResponse(writer, logger, responses.StatusBadRequest, responses.ErrBadRequest)
+
+		return
+	}
+
+	err = storage.AddPermission(ctx, user.User.ID, requestData.TreeID)
 	if err != nil {
 		log.Println(err, responses.StatusBadRequest)
 		responses.SendErrResponse(writer, logger, responses.StatusBadRequest, responses.ErrBadRequest)

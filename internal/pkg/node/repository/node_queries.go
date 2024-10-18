@@ -107,6 +107,12 @@ const (
 		WHERE node_id = $2;
 		`
 
+	UpdateNameQuery = `
+		UPDATE public.node
+		SET name = $1
+		WHERE id = $2;
+		`
+
 	SetRelativeQuery = `
 		INSERT
 		INTO public.relation (relative_id, node_id, relation_type)
