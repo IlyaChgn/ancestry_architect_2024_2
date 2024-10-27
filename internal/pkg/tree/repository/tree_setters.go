@@ -31,6 +31,16 @@ func (storage *TreeStorage) CreateTree(ctx context.Context, userID uint,
 func (storage *TreeStorage) AddPermission(ctx context.Context, userID, treeID uint) error {
 	logger := utils.GetLoggerFromContext(ctx).With(zap.String("storage", utils.GetFunctionName()))
 
+	hasPermission, _ := storage.CheckPermission(ctx, userID, treeID)
+	if hasPermission {
+		customErr := fmt.Errorf("user already has permission")
+
+		utils.LogError(logger, customErr)
+		log.Println(customErr)
+		
+		return customErr
+	}
+
 	_, err := storage.pool.Exec(ctx, AddPermissionQuery, userID, treeID)
 	if err != nil {
 		customErr := fmt.Errorf("something went wrong while adding permission: %v", err)

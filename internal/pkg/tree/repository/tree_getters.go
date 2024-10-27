@@ -122,7 +122,7 @@ func (storage *TreeStorage) GetTree(ctx context.Context, treeID uint) (*models.T
 
 		if err := rows.Scan(&treeData.ID, &treeData.Name, &layerData.ID, &layerData.Number, &nodeData.ID,
 			&nodeData.LayerID, &nodeData.Name, &nodeData.Birthdate, &nodeData.Deathdate, &previewPath,
-			&nodeData.Relatives); err != nil {
+			&nodeData.IsSpouse, &nodeData.Relatives); err != nil {
 			customErr := fmt.Errorf("something went wrong while scanning row, %v", err)
 
 			utils.LogError(logger, customErr)

@@ -164,6 +164,15 @@ func (treeHandler *TreeHandler) AddPermission(writer http.ResponseWriter, reques
 		return
 	}
 
+	session, _ := request.Cookie("session_id")
+	currentUser, _ := treeHandler.authStorage.GetUserBySessionID(ctx, session.Value)
+	if user.User.ID == currentUser.User.ID {
+		log.Println("user can not add permission for himself", responses.StatusBadRequest)
+		responses.SendErrResponse(writer, logger, responses.StatusBadRequest, responses.ErrBadRequest)
+
+		return
+	}
+
 	err = storage.AddPermission(ctx, user.User.ID, requestData.TreeID)
 	if err != nil {
 		log.Println(err, responses.StatusBadRequest)

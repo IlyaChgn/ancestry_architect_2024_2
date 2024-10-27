@@ -10,6 +10,7 @@ type CreateNodeRequest struct {
 	Name        string           `json:"name"`
 	Addition    AdditionDataList `json:"addition"`
 	Relatives   GetRelativesList `json:"relatives"`
+	IsSpouse    bool             `json:"isSpouse"`
 }
 
 type GetRelativesList struct {
@@ -33,6 +34,7 @@ type Node struct {
 	Deathdate   *pgtype.Date      `json:"deathdate"`
 	PreviewPath string            `json:"previewPath"`
 	Relatives   SendRelativesList `json:"relatives"`
+	IsSpouse    bool              `json:"isSpouse"`
 }
 
 type SendRelativesList struct {

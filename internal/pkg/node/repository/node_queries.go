@@ -69,9 +69,9 @@ const (
 
 	CreateNodeQuery = `
 		INSERT 
-		INTO public.node (layer_id, name) 
-		VALUES ($1, $2)
-		RETURNING id, layer_id, name, birthdate, deathdate;
+		INTO public.node (layer_id, name, is_spouse) 
+		VALUES ($1, $2, $3)
+		RETURNING id, layer_id, name, birthdate, deathdate, is_spouse;
 		`
 
 	UpdateBirthdateQuery = `

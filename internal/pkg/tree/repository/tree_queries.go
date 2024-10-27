@@ -42,7 +42,8 @@ const (
 					 nd.name,
 					 nd.birthdate,
 					 nd.deathdate,
-					 nd.preview_path
+					 nd.preview_path,
+					 nd.is_spouse
 				 FROM public.tree tr
 					  JOIN public.layer lr ON lr.tree_id = tr.id
 					  JOIN public.node nd ON lr.id = nd.layer_id
