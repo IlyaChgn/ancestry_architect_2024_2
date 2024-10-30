@@ -77,7 +77,7 @@ func (storage *NodeStorage) createRootNode(ctx context.Context,
 		return nil, err
 	}
 
-	node, err := storage.createNode(ctx, layerID, nodeData.Name, nodeData.IsSpouse)
+	node, err := storage.createNode(ctx, layerID, nodeData.Name, nodeData.IsSpouse, nodeData.Gender)
 	if err != nil {
 		customErr := fmt.Errorf("something went wrong while creating node, %v", err)
 
@@ -144,7 +144,7 @@ func (storage *NodeStorage) createNonRootNode(ctx context.Context,
 		return nil, err
 	}
 
-	node, err := storage.createNode(ctx, layerID, nodeData.Name, nodeData.IsSpouse)
+	node, err := storage.createNode(ctx, layerID, nodeData.Name, nodeData.IsSpouse, nodeData.Gender)
 	if err != nil {
 		customErr := fmt.Errorf("something went wrong while creating node, %v", err)
 
@@ -158,14 +158,14 @@ func (storage *NodeStorage) createNonRootNode(ctx context.Context,
 }
 
 func (storage *NodeStorage) createNode(ctx context.Context, layerID uint, name string,
-	isSpouse bool) (*models.Node, error) {
+	isSpouse bool, gender string) (*models.Node, error) {
 	logger := utils.GetLoggerFromContext(ctx).With(zap.String("storage", utils.GetFunctionName()))
 
 	var node models.Node
 
-	line := storage.pool.QueryRow(ctx, CreateNodeQuery, layerID, name, isSpouse)
+	line := storage.pool.QueryRow(ctx, CreateNodeQuery, layerID, name, isSpouse, gender)
 	if err := line.Scan(&node.ID, &node.LayerID, &node.Name, &node.Birthdate, &node.Deathdate,
-		&node.IsSpouse); err != nil {
+		&node.IsSpouse, &node.Gender); err != nil {
 		customErr := fmt.Errorf("something went wrong while executing query, %v", err)
 
 		utils.LogError(logger, customErr)

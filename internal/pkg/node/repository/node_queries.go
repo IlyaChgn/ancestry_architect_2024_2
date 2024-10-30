@@ -20,16 +20,6 @@ const (
 		);
 		`
 
-	GetTreeQuery = `
-		SELECT tr.name, lr.id, lr.number, nd.id, nd.layer_id, nd.name,
-			   nd.birthdate, nd.deathdate, nd.preview_path
-		FROM public.tree tr
-			JOIN public.layer lr ON lr.tree_id = tr.id
-			JOIN public.node nd ON lr.id = nd.layer_id
-		WHERE nd.is_deleted = FALSE AND tr.id = 1
-		ORDER BY lr.number;
-		`
-
 	GetRelativeNodeQuery = `
 		SELECT nd.id, lr.number, lr.id
 		FROM public.node nd
@@ -41,12 +31,6 @@ const (
 		SELECT relative_id
 		FROM public.relation
 		WHERE node_id = $1 AND relation_type = 'Родитель';
-		`
-
-	GetSpouseQuery = `
-		SELECT relative_id
-		FROM public.relation
-		WHERE node_id = $1 AND relation_type = 'Супруг';
 		`
 
 	GetDescriptionQuery = `
@@ -69,9 +53,9 @@ const (
 
 	CreateNodeQuery = `
 		INSERT 
-		INTO public.node (layer_id, name, is_spouse) 
-		VALUES ($1, $2, $3)
-		RETURNING id, layer_id, name, birthdate, deathdate, is_spouse;
+		INTO public.node (layer_id, name, is_spouse, gender) 
+		VALUES ($1, $2, $3, $4)
+		RETURNING id, layer_id, name, birthdate, deathdate, is_spouse, gender;
 		`
 
 	UpdateBirthdateQuery = `

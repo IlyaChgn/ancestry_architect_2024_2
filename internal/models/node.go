@@ -11,6 +11,7 @@ type CreateNodeRequest struct {
 	Addition    AdditionDataList `json:"addition"`
 	Relatives   GetRelativesList `json:"relatives"`
 	IsSpouse    bool             `json:"isSpouse"`
+	Gender      string           `json:"gender"`
 }
 
 type GetRelativesList struct {
@@ -35,6 +36,7 @@ type Node struct {
 	PreviewPath string            `json:"previewPath"`
 	Relatives   SendRelativesList `json:"relatives"`
 	IsSpouse    bool              `json:"isSpouse"`
+	Gender      string            `json:"gender"`
 }
 
 type SendRelativesList struct {
@@ -52,6 +54,7 @@ type EditNodeRequest struct {
 	Birthdate   string `json:"birthdate"`
 	Deathdate   string `json:"deathdate"`
 	Description string `json:"description"`
+	Gender      string `json:"gender"`
 }
 
 type EditNodeResponse struct {
