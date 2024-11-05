@@ -2,6 +2,7 @@ package models
 
 import (
 	"github.com/jackc/pgtype"
+	"time"
 )
 
 type CreateNodeRequest struct {
@@ -40,6 +41,7 @@ type Node struct {
 }
 
 type SendRelativesList struct {
+	Parents  []uint `json:"parents"`
 	Spouses  []uint `json:"spouses"`
 	Children []uint `json:"children"`
 }
@@ -70,11 +72,25 @@ type UpdatePreviewResponse struct {
 
 type Relative struct {
 	ID          uint
-	LayerNumber uint
+	LayerNumber int
 	LayerID     uint
 }
 
 type ReturningAdditionalData struct {
 	Birthdate *pgtype.Date
 	Deathdate *pgtype.Date
+}
+
+type NodeForAdmin struct {
+	ID          uint       `json:"id"`
+	Name        string     `json:"name"`
+	Birthdate   *time.Time `json:"birthdate"`
+	Deathdate   *time.Time `json:"deathdate"`
+	Gender      string     `json:"gender"`
+	PreviewPath string     `json:"previewPath"`
+	LayerID     uint       `json:"layerID"`
+	LayerNum    int        `json:"layerNum"`
+	TreeID      uint       `json:"treeID"`
+	UserID      uint       `json:"userID"`
+	IsDeleted   bool       `json:"isDeleted"`
 }

@@ -1,8 +1,12 @@
 package server
 
 import (
-	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/node/repository"
+	"fmt"
+	adminproto "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/admin/delivery/grpc/protobuf"
+	noderepo "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/node/repository"
 	treerepo "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/tree/repository"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"log"
 	"net/http"
 	"os"
@@ -46,8 +50,10 @@ func createServer(config serverConfig) *http.Server {
 }
 
 func (srv *Server) Run() error {
+	cfg := &config.AppConfig{}
+
 	cfgPath := os.Getenv("CONFIG_PATH")
-	cfg := config.ReadConfig(cfgPath)
+	config.ReadConfig(cfgPath, cfg)
 	if cfg == nil {
 		log.Fatal("The config wasn`t opened")
 	}
@@ -66,14 +72,28 @@ func (srv *Server) Run() error {
 		log.Fatal("Something went wrong while connecting to postgres database: ", err)
 	}
 
-	redisClient := pool.NewRedisClient(cfg.Redis.Host, cfg.Redis.Port, cfg.Redis.Password)
+	redisClient := pool.NewRedisClient(cfg.Redis.Host, cfg.Redis.Port, cfg.Redis.Password, cfg.Redis.DB)
 
 	authStorage := authrepo.NewAuthStorage(postgresPool, redisClient)
 	profileStorage := profilerepo.NewProfileStorage(postgresPool, os.Getenv("STATIC_DIRECTORY"))
 	treeStorage := treerepo.NewTreeStorage(postgresPool)
-	nodeStorage := repository.NewNodeStorage(postgresPool, os.Getenv("STATIC_DIRECTORY"))
+	nodeStorage := noderepo.NewNodeStorage(postgresPool, os.Getenv("STATIC_DIRECTORY"))
 
-	router := myrouter.NewRouter(logger, authStorage, profileStorage, treeStorage, nodeStorage)
+	adminAddr := fmt.Sprintf("%s:%s", cfg.AdminService.Host, cfg.AdminService.Port)
+	grpcConnAdmin, err := grpc.NewClient(
+		adminAddr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+
+	if err != nil {
+		log.Fatalf("Error occurred while starting grpc connection on admin service. %v", err)
+	}
+
+	defer grpcConnAdmin.Close()
+
+	adminClient := adminproto.NewAdminClient(grpcConnAdmin)
+
+	router := myrouter.NewRouter(logger, authStorage, profileStorage, treeStorage, nodeStorage, adminClient)
 
 	credentials := handlers.AllowCredentials()
 	headersOk := handlers.AllowedHeaders(cfg.Server.Headers)

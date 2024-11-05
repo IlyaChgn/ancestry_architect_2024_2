@@ -42,6 +42,8 @@ func (storage *TreeStorage) GetCreatedTrees(ctx context.Context, userID uint) ([
 		return nil, customErr
 	}
 
+	defer rows.Close()
+
 	for rows.Next() {
 		var tree models.TreeResponse
 
@@ -74,6 +76,8 @@ func (storage *TreeStorage) GetAvailableTrees(ctx context.Context, userID uint) 
 
 		return nil, customErr
 	}
+
+	defer rows.Close()
 
 	for rows.Next() {
 		var tree models.TreeResponse
@@ -112,6 +116,8 @@ func (storage *TreeStorage) GetTree(ctx context.Context, treeID uint) (*models.T
 		treeData   models.Tree
 		oldLayerID uint
 	)
+
+	defer rows.Close()
 
 	for rows.Next() {
 		var (

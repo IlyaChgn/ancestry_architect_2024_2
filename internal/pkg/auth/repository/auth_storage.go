@@ -1,8 +1,8 @@
 package repository
 
 import (
-	session "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/auth/repository/session"
 	pool "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/repository"
+	session "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/session"
 	"github.com/redis/go-redis/v9"
 )
 

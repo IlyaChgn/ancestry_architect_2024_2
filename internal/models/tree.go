@@ -6,7 +6,7 @@ type CreateTreeRequest struct {
 
 type TreeResponse struct {
 	ID     uint   `json:"id"`
-	UserID uint   `json:"user_id"`
+	UserID uint   `json:"userID"`
 	Name   string `json:"name"`
 }
 
@@ -27,6 +27,6 @@ type Tree struct {
 
 type Layer struct {
 	ID     uint   `json:"id"`
-	Number uint   `json:"number"`
+	Number int    `json:"number"`
 	Nodes  []Node `json:"nodes"`
 }

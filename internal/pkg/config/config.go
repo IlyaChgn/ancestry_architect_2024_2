@@ -1,13 +1,5 @@
 package config
 
-import (
-	"log"
-	"os"
-
-	"github.com/ilyakaznacheev/cleanenv"
-	"gopkg.in/yaml.v3"
-)
-
 type RequestUUIDKey string
 type LoggerKey string
 
@@ -18,7 +10,7 @@ const (
 	LoggerContextKey      LoggerKey      = "logger"
 )
 
-type ServerConfig struct {
+type AppServerConfig struct {
 	Host    string   `yaml:"host"`
 	Port    string   `yaml:"port"`
 	Timeout int      `yaml:"timeout"`
@@ -41,37 +33,31 @@ type RedisConfig struct {
 	Port     string `env:"REDIS_PORT"`
 }
 
-type Config struct {
-	Server   ServerConfig `yaml:"server"`
-	Postgres PostgresConfig
-	Redis    RedisConfig
+type AppRedisConfig struct {
+	RedisConfig
+	DB int `env:"APPLICATION_DB"`
 }
 
-func ReadConfig(cfgPath string) *Config {
-	cfg := &Config{}
+type AppConfig struct {
+	Server       AppServerConfig   `yaml:"server"`
+	AdminService AdminServerConfig `yaml:"admin_service"`
+	Postgres     PostgresConfig
+	Redis        AppRedisConfig
+}
 
-	file, err := os.Open(cfgPath)
-	if err != nil {
-		log.Println("Something went wrong while opening config file:", err)
+type AdminServerConfig struct {
+	Host    string `yaml:"host"`
+	Port    string `yaml:"port"`
+	Timeout int    `yaml:"timeout"`
+}
 
-		return nil
-	}
-	defer file.Close()
+type AdminRedisConfig struct {
+	RedisConfig
+	DB int `env:"ADMIN_DB"`
+}
 
-	decoder := yaml.NewDecoder(file)
-	if err := decoder.Decode(cfg); err != nil {
-		log.Println("Something went wrong while reading config file:", err)
-
-		return nil
-	}
-
-	if err := cleanenv.ReadEnv(cfg); err != nil {
-		log.Println("Something went wrong while reading config from .env file:", err)
-
-		return nil
-	}
-
-	log.Println("Successfully opened config")
-
-	return cfg
+type AdminConfig struct {
+	Server   AdminServerConfig `yaml:"admin_service"`
+	Postgres PostgresConfig
+	Redis    AdminRedisConfig
 }

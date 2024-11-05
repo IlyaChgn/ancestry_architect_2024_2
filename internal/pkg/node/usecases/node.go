@@ -10,6 +10,7 @@ type NodeStorageInterface interface {
 	CheckPermission(ctx context.Context, nodeID, userID uint) (bool, error)
 
 	GetDescription(ctx context.Context, nodeID uint) (*models.DescriptionResponse, error)
+	GetNode(ctx context.Context, nodeID uint) (*models.Node, error)
 
 	CreateNode(ctx context.Context, node *models.CreateNodeRequest) (*models.Node, error)
 	DeleteNode(ctx context.Context, nodeID uint) error

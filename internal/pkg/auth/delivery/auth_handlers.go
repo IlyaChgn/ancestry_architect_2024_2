@@ -2,12 +2,12 @@ package delivery
 
 import (
 	"encoding/json"
+	mysession "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/session"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/models"
-	sessionrepo "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/auth/repository/session"
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/auth/usecases"
 	profileusecases "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/profile/usecases"
 	responses "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/delivery"
@@ -17,8 +17,9 @@ import (
 )
 
 type AuthHandler struct {
-	storage        usecases.AuthStorageInterface
-	profileStorage profileusecases.ProfileStorageInterface
+	storage         usecases.AuthStorageInterface
+	profileStorage  profileusecases.ProfileStorageInterface
+	sessionDuration time.Duration
 }
 
 func NewAuthHandler(storage usecases.AuthStorageInterface,
@@ -29,12 +30,12 @@ func NewAuthHandler(storage usecases.AuthStorageInterface,
 	}
 }
 
-func createSession(sessionID string) *http.Cookie {
+func (authHandler *AuthHandler) createSession(sessionID string) *http.Cookie {
 	return &http.Cookie{
 		Name:     "session_id",
 		Value:    sessionID,
 		Path:     "/",
-		Expires:  time.Now().Add(sessionrepo.SessionDuration),
+		Expires:  time.Now().Add(mysession.UserSessionDuration),
 		HttpOnly: true,
 	}
 }
@@ -80,7 +81,7 @@ func (authHandler *AuthHandler) Login(writer http.ResponseWriter, request *http.
 		return
 	}
 
-	newSession := createSession(sessionID)
+	newSession := authHandler.createSession(sessionID)
 	http.SetCookie(writer, newSession)
 
 	user.IsAuth = true
@@ -153,7 +154,7 @@ func (authHandler *AuthHandler) Signup(writer http.ResponseWriter, request *http
 		return
 	}
 
-	newSession := createSession(sessionID)
+	newSession := authHandler.createSession(sessionID)
 	http.SetCookie(writer, newSession)
 
 	responses.SendOkResponse(writer, models.UserResponse{

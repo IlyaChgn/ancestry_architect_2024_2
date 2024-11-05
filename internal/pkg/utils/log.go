@@ -25,21 +25,6 @@ func GetFunctionName() string {
 	return values[len(values)-1] + " in " + shortPath + ":" + line
 }
 
-func GetOnlyFunctionName() string {
-	pc := make([]uintptr, 15)
-	n := runtime.Callers(2, pc)
-	frames := runtime.CallersFrames(pc[:n])
-	frame, _ := frames.Next()
-	values := strings.Split(frame.Function, ".")
-
-	return values[len(values)-1]
-}
-
-func LogInfo(logger *zap.SugaredLogger, msg string) {
-	logger = logger.With(zap.String("msg", msg))
-	logger.Info()
-}
-
 func LogError(logger *zap.SugaredLogger, msg interface{}) {
 	switch m := msg.(type) {
 	case string:
@@ -50,12 +35,6 @@ func LogError(logger *zap.SugaredLogger, msg interface{}) {
 		logger = logger.With(zap.String("msg", "unable to convert msg to string"))
 	}
 	logger.Error()
-}
-
-func LogHandlerInfo(logger *zap.SugaredLogger, msg string, statusCode int) {
-	logger = logger.With(zap.String("status", strconv.Itoa(statusCode)))
-	logger = logger.With(zap.String("msg", msg))
-	logger.Info()
 }
 
 func LogHandlerError(logger *zap.SugaredLogger, msg interface{}, statusCode int) {

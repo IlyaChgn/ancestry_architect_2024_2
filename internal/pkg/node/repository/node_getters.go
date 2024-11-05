@@ -45,6 +45,32 @@ func (storage *NodeStorage) GetDescription(ctx context.Context, nodeID uint) (*m
 	return &description, nil
 }
 
+func (storage *NodeStorage) GetNode(ctx context.Context, nodeID uint) (*models.Node, error) {
+	logger := utils.GetLoggerFromContext(ctx).With(zap.String("storage", utils.GetFunctionName()))
+
+	var (
+		node        models.Node
+		previewPath *string
+	)
+
+	line := storage.pool.QueryRow(ctx, GetNodeQuery, nodeID)
+	if err := line.Scan(&node.ID, &node.LayerID, &node.Name, &node.Birthdate, &node.Deathdate, &previewPath,
+		&node.IsSpouse, &node.Gender, &node.Relatives); err != nil {
+		customErr := fmt.Errorf("something went wrong while getting node by ID, %v", err)
+
+		utils.LogError(logger, customErr)
+		log.Println(customErr)
+
+		return nil, err
+	}
+
+	if previewPath != nil {
+		node.PreviewPath = *previewPath
+	}
+
+	return &node, nil
+}
+
 func (storage *NodeStorage) getRelativeNode(ctx context.Context, relativeID uint) (*models.Relative, error) {
 	logger := utils.GetLoggerFromContext(ctx).With(zap.String("storage", utils.GetFunctionName()))
 
@@ -78,6 +104,8 @@ func (storage *NodeStorage) getParentsList(ctx context.Context, childID uint) ([
 		return nil, err
 	}
 
+	defer rows.Close()
+
 	for rows.Next() {
 		var parentID uint
 
@@ -96,7 +124,7 @@ func (storage *NodeStorage) getParentsList(ctx context.Context, childID uint) ([
 	return parentsList, nil
 }
 
-func (storage *NodeStorage) getLayer(ctx context.Context, treeID, number uint) (uint, error) {
+func (storage *NodeStorage) getLayer(ctx context.Context, treeID uint, number int) (uint, error) {
 	logger := utils.GetLoggerFromContext(ctx).With(zap.String("storage", utils.GetFunctionName()))
 
 	var layerID uint

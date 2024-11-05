@@ -19,7 +19,6 @@ func ApplyMigrations(version uint) {
 	migrator, err := mustGetNewMigrator(migrationsFS, migrationsDir)
 	if err != nil {
 		log.Fatal("Something went wrong while initializing migrator: ", err)
-		os.Exit(1)
 	}
 
 	postgresURL := pool.NewConnectionString(os.Getenv("POSTGRES_USERNAME"), os.Getenv("POSTGRES_PASSWORD"),
@@ -29,7 +28,6 @@ func ApplyMigrations(version uint) {
 	conn, err := sql.Open("postgres", connectionStr)
 	if err != nil {
 		log.Fatal("Unable to connect to database for migrations")
-		os.Exit(1)
 	}
 
 	defer conn.Close()
@@ -37,7 +35,6 @@ func ApplyMigrations(version uint) {
 	err = migrator.applyMigrations(conn, version)
 	if err != nil {
 		log.Fatal("something went wrong while applying migrations: ", err)
-		os.Exit(1)
 	}
 
 	log.Printf("Migration of version %d has been applied", version)

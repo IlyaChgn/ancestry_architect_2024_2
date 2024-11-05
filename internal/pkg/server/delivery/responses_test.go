@@ -9,7 +9,7 @@ import (
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/models"
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/config"
 	responses "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/delivery"
-	logger "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/usecases"
+	mylogger "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/usecases"
 )
 
 func TestOkResponse(t *testing.T) {
@@ -39,7 +39,7 @@ func TestOkResponse(t *testing.T) {
 func TestErrResponse(t *testing.T) {
 	writer := httptest.NewRecorder()
 
-	logger, err := logger.NewLogger(strings.Split(config.OutputLogPath, " "),
+	logger, err := mylogger.NewLogger(strings.Split(config.OutputLogPath, " "),
 		strings.Split(config.ErrorOutputLogPath, " "))
 	if err != nil {
 		t.Fatalf("Error while creating logger, %v", err)

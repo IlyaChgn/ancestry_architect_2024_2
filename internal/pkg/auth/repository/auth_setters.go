@@ -3,14 +3,12 @@ package repository
 import (
 	"context"
 	"fmt"
-	"log"
-
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/models"
+	repository "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/session"
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/utils"
 	"go.uber.org/zap"
+	"log"
 )
-
-const ()
 
 func (storage *AuthStorage) CreateUser(ctx context.Context, email, password,
 	passwordRepeat string) (*models.User, []string) {
@@ -42,7 +40,7 @@ func (storage *AuthStorage) CreateUser(ctx context.Context, email, password,
 }
 
 func (storage *AuthStorage) CreateSession(ctx context.Context, sessionID string, userID uint) error {
-	return storage.manager.CreateSession(ctx, sessionID, userID)
+	return storage.manager.CreateSession(ctx, sessionID, userID, repository.UserSessionDuration)
 }
 
 func (storage *AuthStorage) RemoveSession(ctx context.Context, sessionID string) error {

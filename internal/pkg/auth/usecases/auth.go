@@ -2,7 +2,6 @@ package usecases
 
 import (
 	"context"
-
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/models"
 )
 

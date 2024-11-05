@@ -197,3 +197,23 @@ func (nodeHandler *NodeHandler) DeleteNode(writer http.ResponseWriter, request *
 
 	responses.SendOkResponse(writer, &models.SuccessResponse{Success: true})
 }
+
+func (nodeHandler *NodeHandler) GetNode(writer http.ResponseWriter, request *http.Request) {
+	ctx := request.Context()
+	logger := utils.GetLoggerFromContext(ctx).With(zap.String("handler", utils.GetFunctionName()))
+
+	vars := mux.Vars(request)
+	nodeID, _ := strconv.Atoi(vars["id"])
+
+	storage := nodeHandler.storage
+
+	node, err := storage.GetNode(ctx, uint(nodeID))
+	if err != nil {
+		log.Println(err, responses.StatusBadRequest)
+		responses.SendErrResponse(writer, logger, responses.StatusBadRequest, responses.ErrBadRequest)
+
+		return
+	}
+
+	responses.SendOkResponse(writer, node)
+}

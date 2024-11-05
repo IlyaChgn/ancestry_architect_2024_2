@@ -20,17 +20,28 @@ const (
 			SELECT
 				nd.id AS node_id,
 				COALESCE(
-					json_agg(DISTINCT rl.node_id) FILTER (WHERE rl.relation_type = 'Родитель'),
-					'[]'::json
+								json_agg(DISTINCT rl.relative_id) FILTER (WHERE rl.relation_type = 'Родитель'),
+								'[]'::json
 				) AS parent_ids,
 				COALESCE(
-					json_agg(DISTINCT rl.node_id) FILTER (WHERE rl.relation_type = 'Супруг'),
-					'[]'::json
+								json_agg(DISTINCT rl.node_id) FILTER (WHERE rl.relation_type = 'Супруг'),
+								'[]'::json
 				) AS spouse_ids
 			FROM public.node nd
-				LEFT JOIN public.relation rl ON rl.relative_id = nd.id
+					 LEFT JOIN public.relation rl ON rl.node_id = nd.id
 			GROUP BY nd.id
 		),
+			 children_data AS(
+				 SELECT
+					 nd.id AS node_id,
+					 COALESCE(
+									 json_agg(DISTINCT rl.node_id) FILTER (WHERE rl.relation_type = 'Родитель'),
+									 '[]'::json
+					 ) AS children_ids
+				 FROM public.node nd
+						  LEFT JOIN public.relation rl ON rl.relative_id = nd.id
+				 GROUP BY nd.id
+			 ),
 			 tree_data AS (
 				 SELECT
 					 tr.id AS tree_id,
@@ -46,18 +57,20 @@ const (
 					 nd.is_spouse,
 					 nd.gender
 				 FROM public.tree tr
-					  JOIN public.layer lr ON lr.tree_id = tr.id
-					  JOIN public.node nd ON lr.id = nd.layer_id
+						  JOIN public.layer lr ON lr.tree_id = tr.id
+						  JOIN public.node nd ON lr.id = nd.layer_id
 				 WHERE NOT nd.is_deleted AND tr.id = $1
 			 )
 		SELECT
 			td.*,
 			COALESCE(jsonb_build_object(
-				'children', relation_data.parent_ids,
-				'spouses', relation_data.spouse_ids
-			), '{}'::jsonb) AS relation_json
+							 'children', children_data.children_ids,
+							 'parents', relation_data.parent_ids,
+							 'spouses', relation_data.spouse_ids
+					 ), '{}'::jsonb) AS relation_json
 		FROM tree_data td
-			LEFT JOIN relation_data ON td.node_id = relation_data.node_id
+				 LEFT JOIN relation_data ON td.node_id = relation_data.node_id
+				 LEFT JOIN children_data ON td.node_id = children_data.node_id
 		ORDER BY td.number;
 		`
 

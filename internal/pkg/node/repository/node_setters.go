@@ -354,7 +354,7 @@ func (storage *NodeStorage) updateName(ctx context.Context, name string, nodeID 
 	return nil
 }
 
-func (storage *NodeStorage) createLayerIfNotExists(ctx context.Context, treeID, number uint) (uint, error) {
+func (storage *NodeStorage) createLayerIfNotExists(ctx context.Context, treeID uint, number int) (uint, error) {
 	logger := utils.GetLoggerFromContext(ctx).With(zap.String("storage", utils.GetFunctionName()))
 
 	var layerID uint

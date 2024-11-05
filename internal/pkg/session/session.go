@@ -1,12 +1,11 @@
-package repository
+package session
 
 import (
 	"context"
 	"fmt"
+	"go.uber.org/zap"
 	"strconv"
 	"time"
-
-	"go.uber.org/zap"
 
 	"github.com/redis/go-redis/v9"
 
@@ -14,8 +13,9 @@ import (
 )
 
 const (
-	errSessionNotExists = "session doesn`t exist"
-	SessionDuration     = 3 * 24 * time.Hour
+	errSessionNotExists  = "session doesn`t exist"
+	UserSessionDuration  = 3 * 24 * time.Hour
+	AdminSessionDuration = time.Hour
 )
 
 type SessionManager struct {
@@ -28,10 +28,11 @@ func NewSessionManager(client *redis.Client) *SessionManager {
 	}
 }
 
-func (manager *SessionManager) CreateSession(ctx context.Context, sessionID string, userID uint) error {
+func (manager *SessionManager) CreateSession(ctx context.Context, sessionID string, userID uint,
+	sessionDuration time.Duration) error {
 	logger := logging.GetLoggerFromContext(ctx).With(zap.String("redis", logging.GetFunctionName()))
 
-	err := manager.client.Set(context.Background(), sessionID, userID, SessionDuration).Err()
+	err := manager.client.Set(context.Background(), sessionID, userID, sessionDuration).Err()
 	if err != nil {
 		logging.LogError(logger, fmt.Errorf("something went wrong while setting user session, %w", err))
 
