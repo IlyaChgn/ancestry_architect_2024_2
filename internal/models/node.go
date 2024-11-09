@@ -2,7 +2,6 @@ package models
 
 import (
 	"github.com/jackc/pgtype"
-	"time"
 )
 
 type CreateNodeRequest struct {
@@ -79,18 +78,4 @@ type Relative struct {
 type ReturningAdditionalData struct {
 	Birthdate *pgtype.Date
 	Deathdate *pgtype.Date
-}
-
-type NodeForAdmin struct {
-	ID          uint       `json:"id"`
-	Name        string     `json:"name"`
-	Birthdate   *time.Time `json:"birthdate"`
-	Deathdate   *time.Time `json:"deathdate"`
-	Gender      string     `json:"gender"`
-	PreviewPath string     `json:"previewPath"`
-	LayerID     uint       `json:"layerID"`
-	LayerNum    int        `json:"layerNum"`
-	TreeID      uint       `json:"treeID"`
-	UserID      uint       `json:"userID"`
-	IsDeleted   bool       `json:"isDeleted"`
 }

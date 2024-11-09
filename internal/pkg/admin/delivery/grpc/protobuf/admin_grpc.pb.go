@@ -22,26 +22,28 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Admin_Login_FullMethodName        = "/Admin/Login"
-	Admin_Logout_FullMethodName       = "/Admin/Logout"
-	Admin_EditPassword_FullMethodName = "/Admin/EditPassword"
-	Admin_GetUsersList_FullMethodName = "/Admin/GetUsersList"
-	Admin_GetNodesList_FullMethodName = "/Admin/GetNodesList"
-	Admin_EditTreeName_FullMethodName = "/Admin/EditTreeName"
-	Admin_GetTreesList_FullMethodName = "/Admin/GetTreesList"
+	Admin_GetAdminBySessionID_FullMethodName = "/Admin/GetAdminBySessionID"
+	Admin_Login_FullMethodName               = "/Admin/Login"
+	Admin_Logout_FullMethodName              = "/Admin/Logout"
+	Admin_EditPassword_FullMethodName        = "/Admin/EditPassword"
+	Admin_GetUsersList_FullMethodName        = "/Admin/GetUsersList"
+	Admin_GetNodesList_FullMethodName        = "/Admin/GetNodesList"
+	Admin_EditTreeName_FullMethodName        = "/Admin/EditTreeName"
+	Admin_GetTreesList_FullMethodName        = "/Admin/GetTreesList"
 )
 
 // AdminClient is the client API for Admin service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AdminClient interface {
+	GetAdminBySessionID(ctx context.Context, in *SessionRequest, opts ...grpc.CallOption) (*UserData, error)
 	Login(ctx context.Context, in *LoginUserRequest, opts ...grpc.CallOption) (*UserAuthResponse, error)
 	Logout(ctx context.Context, in *SessionRequest, opts ...grpc.CallOption) (*UserAuthResponse, error)
 	EditPassword(ctx context.Context, in *EditPasswordRequest, opts ...grpc.CallOption) (*UserData, error)
-	GetUsersList(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[UserData], error)
-	GetNodesList(ctx context.Context, in *GetNodesListRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[NodeData], error)
+	GetUsersList(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*UserDataList, error)
+	GetNodesList(ctx context.Context, in *GetNodesListRequest, opts ...grpc.CallOption) (*NodeDataList, error)
 	EditTreeName(ctx context.Context, in *EditTreeNameRequest, opts ...grpc.CallOption) (*TreeData, error)
-	GetTreesList(ctx context.Context, in *GetTreesListRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[TreeData], error)
+	GetTreesList(ctx context.Context, in *GetTreesListRequest, opts ...grpc.CallOption) (*TreeDataList, error)
 }
 
 type adminClient struct {
@@ -50,6 +52,16 @@ type adminClient struct {
 
 func NewAdminClient(cc grpc.ClientConnInterface) AdminClient {
 	return &adminClient{cc}
+}
+
+func (c *adminClient) GetAdminBySessionID(ctx context.Context, in *SessionRequest, opts ...grpc.CallOption) (*UserData, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UserData)
+	err := c.cc.Invoke(ctx, Admin_GetAdminBySessionID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *adminClient) Login(ctx context.Context, in *LoginUserRequest, opts ...grpc.CallOption) (*UserAuthResponse, error) {
@@ -82,43 +94,25 @@ func (c *adminClient) EditPassword(ctx context.Context, in *EditPasswordRequest,
 	return out, nil
 }
 
-func (c *adminClient) GetUsersList(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[UserData], error) {
+func (c *adminClient) GetUsersList(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*UserDataList, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &Admin_ServiceDesc.Streams[0], Admin_GetUsersList_FullMethodName, cOpts...)
+	out := new(UserDataList)
+	err := c.cc.Invoke(ctx, Admin_GetUsersList_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[emptypb.Empty, UserData]{ClientStream: stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
+	return out, nil
 }
 
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type Admin_GetUsersListClient = grpc.ServerStreamingClient[UserData]
-
-func (c *adminClient) GetNodesList(ctx context.Context, in *GetNodesListRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[NodeData], error) {
+func (c *adminClient) GetNodesList(ctx context.Context, in *GetNodesListRequest, opts ...grpc.CallOption) (*NodeDataList, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &Admin_ServiceDesc.Streams[1], Admin_GetNodesList_FullMethodName, cOpts...)
+	out := new(NodeDataList)
+	err := c.cc.Invoke(ctx, Admin_GetNodesList_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[GetNodesListRequest, NodeData]{ClientStream: stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
+	return out, nil
 }
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type Admin_GetNodesListClient = grpc.ServerStreamingClient[NodeData]
 
 func (c *adminClient) EditTreeName(ctx context.Context, in *EditTreeNameRequest, opts ...grpc.CallOption) (*TreeData, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
@@ -130,36 +124,28 @@ func (c *adminClient) EditTreeName(ctx context.Context, in *EditTreeNameRequest,
 	return out, nil
 }
 
-func (c *adminClient) GetTreesList(ctx context.Context, in *GetTreesListRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[TreeData], error) {
+func (c *adminClient) GetTreesList(ctx context.Context, in *GetTreesListRequest, opts ...grpc.CallOption) (*TreeDataList, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &Admin_ServiceDesc.Streams[2], Admin_GetTreesList_FullMethodName, cOpts...)
+	out := new(TreeDataList)
+	err := c.cc.Invoke(ctx, Admin_GetTreesList_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[GetTreesListRequest, TreeData]{ClientStream: stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
+	return out, nil
 }
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type Admin_GetTreesListClient = grpc.ServerStreamingClient[TreeData]
 
 // AdminServer is the server API for Admin service.
 // All implementations must embed UnimplementedAdminServer
 // for forward compatibility.
 type AdminServer interface {
+	GetAdminBySessionID(context.Context, *SessionRequest) (*UserData, error)
 	Login(context.Context, *LoginUserRequest) (*UserAuthResponse, error)
 	Logout(context.Context, *SessionRequest) (*UserAuthResponse, error)
 	EditPassword(context.Context, *EditPasswordRequest) (*UserData, error)
-	GetUsersList(*emptypb.Empty, grpc.ServerStreamingServer[UserData]) error
-	GetNodesList(*GetNodesListRequest, grpc.ServerStreamingServer[NodeData]) error
+	GetUsersList(context.Context, *emptypb.Empty) (*UserDataList, error)
+	GetNodesList(context.Context, *GetNodesListRequest) (*NodeDataList, error)
 	EditTreeName(context.Context, *EditTreeNameRequest) (*TreeData, error)
-	GetTreesList(*GetTreesListRequest, grpc.ServerStreamingServer[TreeData]) error
+	GetTreesList(context.Context, *GetTreesListRequest) (*TreeDataList, error)
 	mustEmbedUnimplementedAdminServer()
 }
 
@@ -170,6 +156,9 @@ type AdminServer interface {
 // pointer dereference when methods are called.
 type UnimplementedAdminServer struct{}
 
+func (UnimplementedAdminServer) GetAdminBySessionID(context.Context, *SessionRequest) (*UserData, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAdminBySessionID not implemented")
+}
 func (UnimplementedAdminServer) Login(context.Context, *LoginUserRequest) (*UserAuthResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
@@ -179,17 +168,17 @@ func (UnimplementedAdminServer) Logout(context.Context, *SessionRequest) (*UserA
 func (UnimplementedAdminServer) EditPassword(context.Context, *EditPasswordRequest) (*UserData, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EditPassword not implemented")
 }
-func (UnimplementedAdminServer) GetUsersList(*emptypb.Empty, grpc.ServerStreamingServer[UserData]) error {
-	return status.Errorf(codes.Unimplemented, "method GetUsersList not implemented")
+func (UnimplementedAdminServer) GetUsersList(context.Context, *emptypb.Empty) (*UserDataList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUsersList not implemented")
 }
-func (UnimplementedAdminServer) GetNodesList(*GetNodesListRequest, grpc.ServerStreamingServer[NodeData]) error {
-	return status.Errorf(codes.Unimplemented, "method GetNodesList not implemented")
+func (UnimplementedAdminServer) GetNodesList(context.Context, *GetNodesListRequest) (*NodeDataList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNodesList not implemented")
 }
 func (UnimplementedAdminServer) EditTreeName(context.Context, *EditTreeNameRequest) (*TreeData, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EditTreeName not implemented")
 }
-func (UnimplementedAdminServer) GetTreesList(*GetTreesListRequest, grpc.ServerStreamingServer[TreeData]) error {
-	return status.Errorf(codes.Unimplemented, "method GetTreesList not implemented")
+func (UnimplementedAdminServer) GetTreesList(context.Context, *GetTreesListRequest) (*TreeDataList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTreesList not implemented")
 }
 func (UnimplementedAdminServer) mustEmbedUnimplementedAdminServer() {}
 func (UnimplementedAdminServer) testEmbeddedByValue()               {}
@@ -210,6 +199,24 @@ func RegisterAdminServer(s grpc.ServiceRegistrar, srv AdminServer) {
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&Admin_ServiceDesc, srv)
+}
+
+func _Admin_GetAdminBySessionID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SessionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).GetAdminBySessionID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_GetAdminBySessionID_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).GetAdminBySessionID(ctx, req.(*SessionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Admin_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -266,27 +273,41 @@ func _Admin_EditPassword_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Admin_GetUsersList_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(emptypb.Empty)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _Admin_GetUsersList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(AdminServer).GetUsersList(m, &grpc.GenericServerStream[emptypb.Empty, UserData]{ServerStream: stream})
+	if interceptor == nil {
+		return srv.(AdminServer).GetUsersList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_GetUsersList_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).GetUsersList(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type Admin_GetUsersListServer = grpc.ServerStreamingServer[UserData]
-
-func _Admin_GetNodesList_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(GetNodesListRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _Admin_GetNodesList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNodesListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(AdminServer).GetNodesList(m, &grpc.GenericServerStream[GetNodesListRequest, NodeData]{ServerStream: stream})
+	if interceptor == nil {
+		return srv.(AdminServer).GetNodesList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_GetNodesList_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).GetNodesList(ctx, req.(*GetNodesListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type Admin_GetNodesListServer = grpc.ServerStreamingServer[NodeData]
 
 func _Admin_EditTreeName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(EditTreeNameRequest)
@@ -306,16 +327,23 @@ func _Admin_EditTreeName_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Admin_GetTreesList_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(GetTreesListRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _Admin_GetTreesList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTreesListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(AdminServer).GetTreesList(m, &grpc.GenericServerStream[GetTreesListRequest, TreeData]{ServerStream: stream})
+	if interceptor == nil {
+		return srv.(AdminServer).GetTreesList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_GetTreesList_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).GetTreesList(ctx, req.(*GetTreesListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type Admin_GetTreesListServer = grpc.ServerStreamingServer[TreeData]
 
 // Admin_ServiceDesc is the grpc.ServiceDesc for Admin service.
 // It's only intended for direct use with grpc.RegisterService,
@@ -324,6 +352,10 @@ var Admin_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "Admin",
 	HandlerType: (*AdminServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetAdminBySessionID",
+			Handler:    _Admin_GetAdminBySessionID_Handler,
+		},
 		{
 			MethodName: "Login",
 			Handler:    _Admin_Login_Handler,
@@ -337,26 +369,22 @@ var Admin_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Admin_EditPassword_Handler,
 		},
 		{
+			MethodName: "GetUsersList",
+			Handler:    _Admin_GetUsersList_Handler,
+		},
+		{
+			MethodName: "GetNodesList",
+			Handler:    _Admin_GetNodesList_Handler,
+		},
+		{
 			MethodName: "EditTreeName",
 			Handler:    _Admin_EditTreeName_Handler,
 		},
-	},
-	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "GetUsersList",
-			Handler:       _Admin_GetUsersList_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "GetNodesList",
-			Handler:       _Admin_GetNodesList_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "GetTreesList",
-			Handler:       _Admin_GetTreesList_Handler,
-			ServerStreams: true,
+			MethodName: "GetTreesList",
+			Handler:    _Admin_GetTreesList_Handler,
 		},
 	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "admin.proto",
 }

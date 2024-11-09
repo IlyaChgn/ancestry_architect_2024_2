@@ -5,6 +5,7 @@ import (
 	proto "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/admin/delivery/grpc/protobuf"
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/utils"
 	"github.com/google/uuid"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (manager *AdminManager) Login(ctx context.Context, in *proto.LoginUserRequest) (*proto.UserAuthResponse, error) {
@@ -60,7 +61,7 @@ func (manager *AdminManager) EditPassword(ctx context.Context, in *proto.EditPas
 	}, nil
 }
 
-func (manager *AdminManager) GetUsersList(ctx context.Context) (*[]proto.UserData, error) {
+func (manager *AdminManager) GetUsersList(ctx context.Context, empty *emptypb.Empty) (*proto.UserDataList, error) {
 	storage := manager.storage
 
 	list, err := storage.GetUsersList(ctx)
@@ -68,10 +69,10 @@ func (manager *AdminManager) GetUsersList(ctx context.Context) (*[]proto.UserDat
 		return nil, err
 	}
 
-	var returningList []proto.UserData
+	var returningList proto.UserDataList
 
 	for _, val := range *list {
-		returningList = append(returningList, proto.UserData{
+		returningList.Users = append(returningList.Users, &proto.UserData{
 			ID:           uint32(val.ID),
 			Email:        val.Email,
 			PasswordHash: val.PasswordHash,
@@ -79,4 +80,20 @@ func (manager *AdminManager) GetUsersList(ctx context.Context) (*[]proto.UserDat
 	}
 
 	return &returningList, nil
+}
+
+func (manager *AdminManager) GetAdminBySessionID(ctx context.Context,
+	request *proto.SessionRequest) (*proto.UserData, error) {
+	storage := manager.storage
+
+	user, err := storage.GetAdminBySessionID(ctx, request.GetSessionID())
+	if err != nil {
+		return nil, err
+	}
+
+	return &proto.UserData{
+		ID:           uint32(user.ID),
+		Email:        user.Email,
+		PasswordHash: "",
+	}, nil
 }

@@ -8,7 +8,7 @@ import (
 )
 
 func (manager *AdminManager) GetNodesList(ctx context.Context,
-	in *proto.GetNodesListRequest) (*[]proto.NodeData, error) {
+	in *proto.GetNodesListRequest) (*proto.NodeDataList, error) {
 	storage := manager.storage
 
 	list, err := storage.GetNodesList(ctx, uint(in.GetTreeID()))
@@ -16,14 +16,14 @@ func (manager *AdminManager) GetNodesList(ctx context.Context,
 		return nil, err
 	}
 
-	var returningList []proto.NodeData
+	var returningList proto.NodeDataList
 
 	for _, val := range *list {
-		returningList = append(returningList, proto.NodeData{
+		returningList.Nodes = append(returningList.Nodes, &proto.NodeData{
 			ID:          uint32(val.ID),
 			Name:        val.Name,
-			Birthdate:   timestamppb.New(*val.Birthdate),
-			Deathdate:   timestamppb.New(*val.Deathdate),
+			Birthdate:   timestamppb.New(val.Birthdate),
+			Deathdate:   timestamppb.New(val.Deathdate),
 			Gender:      val.Gender,
 			PreviewPath: val.PreviewPath,
 			LayerID:     uint32(val.LayerID),
@@ -54,7 +54,7 @@ func (manager *AdminManager) EditTreeName(ctx context.Context,
 }
 
 func (manager *AdminManager) GetTreesList(ctx context.Context,
-	in *proto.GetTreesListRequest) (*[]proto.TreeData, error) {
+	in *proto.GetTreesListRequest) (*proto.TreeDataList, error) {
 	storage := manager.storage
 
 	var (
@@ -72,10 +72,10 @@ func (manager *AdminManager) GetTreesList(ctx context.Context,
 		return nil, err
 	}
 
-	var returningList []proto.TreeData
+	var returningList proto.TreeDataList
 
 	for _, val := range *list {
-		returningList = append(returningList, proto.TreeData{
+		returningList.Trees = append(returningList.Trees, &proto.TreeData{
 			ID:     uint32(val.ID),
 			UserID: uint32(val.UserID),
 			Name:   val.Name,

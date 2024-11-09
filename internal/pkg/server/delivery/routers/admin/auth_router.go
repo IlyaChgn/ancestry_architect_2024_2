@@ -5,11 +5,16 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func ServeAdminAuthRouter(router *mux.Router, adminHandler *delivery.AdminHandler) {
+func ServeAdminAuthRouter(router *mux.Router, adminHandler *delivery.AdminHandler,
+	adminRequiredMiddleware mux.MiddlewareFunc) {
 	subrouter := router.PathPrefix("/auth").Subrouter()
 
 	subrouter.HandleFunc("/login", adminHandler.Login).Methods("POST")
-	subrouter.HandleFunc("/logout", adminHandler.Logout).Methods("POST")
-	subrouter.HandleFunc("/password", adminHandler.EditUserPassword).Methods("POST")
-	subrouter.HandleFunc("/list", adminHandler.GetUsersList).Methods("GET")
+
+	subrouterAdminRequired := subrouter.PathPrefix("").Subrouter()
+	subrouterAdminRequired.Use(adminRequiredMiddleware)
+
+	subrouterAdminRequired.HandleFunc("/logout", adminHandler.Logout).Methods("POST")
+	subrouterAdminRequired.HandleFunc("/password", adminHandler.EditUserPassword).Methods("POST")
+	subrouterAdminRequired.HandleFunc("/list", adminHandler.GetUsersList).Methods("GET")
 }

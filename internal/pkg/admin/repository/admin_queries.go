@@ -7,6 +7,12 @@ const (
 		WHERE u.email = $1 AND u.is_admin;
 		`
 
+	GetAdminByIDQuery = `
+		SELECT u.id, u.email, u.password_hash
+		FROM public.user u
+		WHERE u.id = $1 AND u.is_admin;
+		`
+
 	EditUserPasswordQuery = `
 		UPDATE public.user
 		SET password_hash = $2

@@ -58,6 +58,7 @@ func (storage *AuthStorage) GetUserByID(ctx context.Context, id uint) (*models.U
 	if err := line.Scan(&user.ID, &user.Email, &user.PasswordHash, &nullProfile.Name,
 		&nullProfile.Surname); err != nil {
 		customErr := fmt.Errorf("something went wrong while scanning line, %v", err)
+
 		utils.LogError(logger, customErr)
 		log.Println(customErr)
 

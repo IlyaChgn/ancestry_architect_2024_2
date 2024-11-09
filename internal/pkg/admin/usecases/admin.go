@@ -7,6 +7,7 @@ import (
 
 type AdminStorageInterface interface {
 	GetAdminByEmail(ctx context.Context, email string) (*models.User, error)
+	GetAdminBySessionID(ctx context.Context, sessionID string) (*models.User, error)
 	UpdatePassword(ctx context.Context, id uint, password string) (*models.User, error)
 	GetUsersList(ctx context.Context) (*[]models.User, error)
 	CreateSession(ctx context.Context, sessionID string, userID uint) error

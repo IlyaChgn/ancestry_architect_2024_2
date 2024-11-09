@@ -5,6 +5,7 @@ import (
 	admindel "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/admin/delivery/rest"
 	authdel "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/auth/delivery"
 	authusecases "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/auth/usecases"
+	myadmin "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/middleware/admin"
 	myauth "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/middleware/auth"
 	mylogger "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/middleware/log"
 	mynode "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/middleware/node"
@@ -39,6 +40,7 @@ func NewRouter(logger *zap.SugaredLogger,
 	loginRequiredMiddleware := myauth.LoginRequiredMiddleware(authStorage)
 	logoutRequiredMiddleware := myauth.LogoutRequiredMiddleware(authStorage)
 	permissionRequiredMiddleware := mynode.PermissionRequiredMiddleware(nodeStorage, authStorage)
+	adminRequiredMiddleware := myadmin.AdminRequiredMiddleware(adminClient)
 
 	apiRouter := router.PathPrefix("/api").Subrouter()
 	approuters.ServeAppAuthRouter(apiRouter, authHandler, loginRequiredMiddleware, logoutRequiredMiddleware)
@@ -47,8 +49,8 @@ func NewRouter(logger *zap.SugaredLogger,
 	approuters.ServeAppNodeRouter(apiRouter, nodeHandler, loginRequiredMiddleware, permissionRequiredMiddleware)
 
 	adminRouter := router.PathPrefix("/admin").Subrouter()
-	routers.ServeAdminAuthRouter(adminRouter, adminHandler)
-	routers.ServeAdminTreeRouter(adminRouter, adminHandler)
+	routers.ServeAdminAuthRouter(adminRouter, adminHandler, adminRequiredMiddleware)
+	routers.ServeAdminTreeRouter(adminRouter, adminHandler, adminRequiredMiddleware)
 
 	return router
 }

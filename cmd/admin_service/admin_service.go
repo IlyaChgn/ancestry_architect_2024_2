@@ -62,7 +62,7 @@ func main() {
 	srv := grpc.NewServer(grpc.ChainUnaryInterceptor(recovery.UnaryServerInterceptor()))
 	adminproto.RegisterAdminServer(srv, adminManager)
 
-	log.Printf("admin service is listening on %s\n", addr)
+	log.Printf("Admin service is listening on %s\n", addr)
 
 	err = srv.Serve(listener)
 	if err != nil {

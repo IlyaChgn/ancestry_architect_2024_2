@@ -8,14 +8,16 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 service Admin {
+  rpc GetAdminBySessionID(SessionRequest) returns (UserData);
+
   rpc Login(LoginUserRequest) returns (UserAuthResponse);
   rpc Logout(SessionRequest) returns (UserAuthResponse);
   rpc EditPassword(EditPasswordRequest) returns (UserData);
-  rpc GetUsersList(google.protobuf.Empty) returns (stream UserData);
+  rpc GetUsersList(google.protobuf.Empty) returns (UserDataList);
 
-  rpc GetNodesList(GetNodesListRequest) returns (stream NodeData);
+  rpc GetNodesList(GetNodesListRequest) returns (NodeDataList);
   rpc EditTreeName(EditTreeNameRequest) returns (TreeData);
-  rpc GetTreesList(GetTreesListRequest) returns (stream TreeData);
+  rpc GetTreesList(GetTreesListRequest) returns (TreeDataList);
 }
 
 message LoginUserRequest {
@@ -80,4 +82,16 @@ message TreeData {
   uint32 ID = 1;
   uint32 UserID = 2;
   string Name = 3;
+}
+
+message UserDataList {
+  repeated UserData Users = 1;
+}
+
+message TreeDataList {
+  repeated TreeData Trees = 1;
+}
+
+message NodeDataList {
+  repeated NodeData Nodes = 1;
 }

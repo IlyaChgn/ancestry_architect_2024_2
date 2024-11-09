@@ -7,6 +7,7 @@ import (
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/utils"
 	"go.uber.org/zap"
 	"log"
+	"time"
 )
 
 func (storage *AdminStorage) GetTreesList(ctx context.Context) (*[]models.TreeResponse, error) {
@@ -97,9 +98,14 @@ func (storage *AdminStorage) GetNodesList(ctx context.Context, treeID uint) (*[]
 	defer rows.Close()
 
 	for rows.Next() {
-		var node models.NodeForAdmin
+		var (
+			node        models.NodeForAdmin
+			birthdate   *time.Time
+			deathdate   *time.Time
+			previewPath *string
+		)
 
-		if err := rows.Scan(&node.ID, &node.Name, &node.Birthdate, &node.Deathdate, &node.Gender, &node.PreviewPath,
+		if err := rows.Scan(&node.ID, &node.Name, &birthdate, &deathdate, &node.Gender, &previewPath,
 			&node.IsDeleted, &node.LayerID, &node.LayerNum, &node.TreeID, &node.UserID); err != nil {
 			customErr := fmt.Errorf("something went wrong while scanning line, %v", err)
 
@@ -108,6 +114,20 @@ func (storage *AdminStorage) GetNodesList(ctx context.Context, treeID uint) (*[]
 
 			return nil, customErr
 		}
+
+		if birthdate != nil {
+			node.Birthdate = *birthdate
+		}
+
+		if deathdate != nil {
+			node.Deathdate = *deathdate
+		}
+
+		if previewPath != nil {
+			node.PreviewPath = *previewPath
+		}
+
+		list = append(list, node)
 	}
 
 	return &list, nil
