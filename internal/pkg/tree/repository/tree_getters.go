@@ -117,6 +117,8 @@ func (storage *TreeStorage) GetTree(ctx context.Context, treeID uint) (*models.T
 		oldLayerID uint
 	)
 
+	ind := -1
+
 	defer rows.Close()
 
 	for rows.Next() {
@@ -141,13 +143,14 @@ func (storage *TreeStorage) GetTree(ctx context.Context, treeID uint) (*models.T
 			oldLayerID = layerData.ID
 
 			tree.Layers = append(tree.Layers, layerData)
+			ind += 1
 		}
 
 		if previewPath != nil {
 			nodeData.PreviewPath = *previewPath
 		}
 
-		tree.Layers[layerData.Number].Nodes = append(tree.Layers[layerData.Number].Nodes, nodeData)
+		tree.Layers[ind].Nodes = append(tree.Layers[ind].Nodes, nodeData)
 	}
 
 	tree.ID = treeData.ID
