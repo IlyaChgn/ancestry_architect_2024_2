@@ -60,7 +60,7 @@ const (
 								'[]'::json
 				) AS parent_ids,
 				COALESCE(
-								json_agg(DISTINCT rl.node_id) FILTER (WHERE rl.relation_type = 'Супруг'),
+								json_agg(DISTINCT rl.relative_id) FILTER (WHERE rl.relation_type = 'Супруг'),
 								'[]'::json
 				) AS spouse_ids
 			FROM public.node nd
