@@ -59,10 +59,11 @@ type EditNodeRequest struct {
 }
 
 type EditNodeResponse struct {
-	Name      string       `json:"name"`
-	Birthdate *pgtype.Date `json:"birthdate"`
-	Deathdate *pgtype.Date `json:"deathdate"`
-	Gender    string       `json:"gender"`
+	Name        string       `json:"name"`
+	Birthdate   *pgtype.Date `json:"birthdate"`
+	Deathdate   *pgtype.Date `json:"deathdate"`
+	Description string       `json:"description"`
+	Gender      string       `json:"gender"`
 }
 
 type UpdatePreviewResponse struct {

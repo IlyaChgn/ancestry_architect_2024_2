@@ -126,6 +126,8 @@ func (storage *NodeStorage) EditNode(ctx context.Context, editedNode *models.Edi
 
 			return nil, err
 		}
+
+		node.Description = editedNode.Description
 	}
 
 	if editedNode.Gender != "" {
@@ -324,11 +326,14 @@ func (storage *NodeStorage) updateDeathdate(ctx context.Context, deathdate strin
 func (storage *NodeStorage) updateDescription(ctx context.Context, description string, nodeID uint) error {
 	logger := utils.GetLoggerFromContext(ctx).With(zap.String("storage", utils.GetFunctionName()))
 
-	var oldDescription string
+	var (
+		oldDescription string
+		id             uint
+	)
 
 	oldDescriptionLine := storage.pool.QueryRow(ctx, GetDescriptionQuery, nodeID)
-	if oldDescriptionErr := oldDescriptionLine.Scan(&oldDescription); oldDescriptionErr != nil {
-		_, err := storage.pool.Exec(ctx, UpdateDescriptionQuery, description, nodeID)
+	if oldDescriptionErr := oldDescriptionLine.Scan(&id, &oldDescription); oldDescriptionErr != nil {
+		_, err := storage.pool.Exec(ctx, InsertDescriptionQuery, description, nodeID)
 		if err != nil {
 			customErr := fmt.Errorf("something went wrong while executing query, %v", err)
 
@@ -337,9 +342,11 @@ func (storage *NodeStorage) updateDescription(ctx context.Context, description s
 
 			return err
 		}
+
+		return nil
 	}
 
-	_, err := storage.pool.Exec(ctx, InsertDescriptionQuery, description, nodeID)
+	_, err := storage.pool.Exec(ctx, UpdateDescriptionQuery, description, nodeID)
 	if err != nil {
 		customErr := fmt.Errorf("something went wrong while executing query, %v", err)
 
