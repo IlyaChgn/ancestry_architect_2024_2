@@ -10,6 +10,7 @@ func ServeAdminAuthRouter(router *mux.Router, adminHandler *delivery.AdminHandle
 	subrouter := router.PathPrefix("/auth").Subrouter()
 
 	subrouter.HandleFunc("/login", adminHandler.Login).Methods("POST")
+	subrouter.HandleFunc("/check_auth", adminHandler.CheckAuth).Methods("GET")
 
 	subrouterAdminRequired := subrouter.PathPrefix("").Subrouter()
 	subrouterAdminRequired.Use(adminRequiredMiddleware)

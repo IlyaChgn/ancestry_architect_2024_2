@@ -143,3 +143,28 @@ func (adminHandler *AdminHandler) GetUsersList(writer http.ResponseWriter, reque
 
 	responses.SendOkResponse(writer, &users)
 }
+
+func (adminHandler *AdminHandler) CheckAuth(writer http.ResponseWriter, request *http.Request) {
+	ctx := request.Context()
+
+	session, _ := request.Cookie("admin_sid")
+	if session == nil {
+		responses.SendOkResponse(writer, &models.AdminResponse{IsAuth: false})
+
+		return
+	}
+
+	client := adminHandler.adminClient
+	admin, _ := client.GetAdminBySessionID(ctx, &proto.SessionRequest{SessionID: session.Value})
+	if admin == nil {
+		responses.SendOkResponse(writer, &models.AdminResponse{IsAuth: false})
+
+		return
+	}
+
+	responses.SendOkResponse(writer, &models.AdminResponse{
+		ID:     uint(admin.ID),
+		Email:  admin.Email,
+		IsAuth: true,
+	})
+}
