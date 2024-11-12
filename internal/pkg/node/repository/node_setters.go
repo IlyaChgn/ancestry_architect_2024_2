@@ -128,6 +128,20 @@ func (storage *NodeStorage) EditNode(ctx context.Context, editedNode *models.Edi
 		}
 	}
 
+	if editedNode.Gender != "" {
+		err = storage.updateGender(ctx, editedNode.Gender, nodeID)
+		if err != nil {
+			customErr := fmt.Errorf("something went wrong while updating gender, %v", err)
+
+			utils.LogError(logger, customErr)
+			log.Println(customErr)
+
+			return nil, err
+		}
+
+		node.Gender = editedNode.Gender
+	}
+
 	return &node, nil
 }
 
@@ -326,6 +340,22 @@ func (storage *NodeStorage) updateDescription(ctx context.Context, description s
 	}
 
 	_, err := storage.pool.Exec(ctx, InsertDescriptionQuery, description, nodeID)
+	if err != nil {
+		customErr := fmt.Errorf("something went wrong while executing query, %v", err)
+
+		utils.LogError(logger, customErr)
+		log.Println(customErr)
+
+		return err
+	}
+
+	return nil
+}
+
+func (storage *NodeStorage) updateGender(ctx context.Context, gender string, nodeID uint) error {
+	logger := utils.GetLoggerFromContext(ctx).With(zap.String("storage", utils.GetFunctionName()))
+
+	_, err := storage.pool.Exec(ctx, UpdateGenderQuery, gender, nodeID)
 	if err != nil {
 		customErr := fmt.Errorf("something went wrong while executing query, %v", err)
 

@@ -17,8 +17,9 @@ type UserSignupRequest struct {
 }
 
 type UserResponse struct {
-	IsAuth  bool   `json:"isAuth"`
-	User    User   `json:"user"`
-	Name    string `json:"name"`
-	Surname string `json:"surname"`
+	IsAuth     bool   `json:"isAuth"`
+	User       User   `json:"user"`
+	Name       string `json:"name"`
+	Surname    string `json:"surname"`
+	AvatarPath string `json:"avatarPath"`
 }

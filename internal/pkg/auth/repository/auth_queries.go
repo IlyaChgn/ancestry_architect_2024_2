@@ -10,7 +10,7 @@ const (
 		`
 
 	GetUserByIDQuery = `
-		SELECT u.id, u.email, u.password_hash, p.name, p.surname
+		SELECT u.id, u.email, u.password_hash, p.name, p.surname, p.avatar_path
 		FROM public.user u
 		JOIN public.profile p
 		ON u.id = p.user_id

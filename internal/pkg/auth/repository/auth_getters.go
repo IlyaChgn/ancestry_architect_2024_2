@@ -56,7 +56,7 @@ func (storage *AuthStorage) GetUserByID(ctx context.Context, id uint) (*models.U
 
 	line := storage.pool.QueryRow(ctx, GetUserByIDQuery, id)
 	if err := line.Scan(&user.ID, &user.Email, &user.PasswordHash, &nullProfile.Name,
-		&nullProfile.Surname); err != nil {
+		&nullProfile.Surname, &nullProfile.AvatarPath); err != nil {
 		customErr := fmt.Errorf("something went wrong while scanning line, %v", err)
 
 		utils.LogError(logger, customErr)
@@ -75,10 +75,16 @@ func (storage *AuthStorage) GetUserByID(ctx context.Context, id uint) (*models.U
 		surname = *nullProfile.Surname
 	}
 
+	var avatarPath string
+	if nullProfile.AvatarPath != nil {
+		avatarPath = *nullProfile.AvatarPath
+	}
+
 	return &models.UserResponse{
-		User:    user,
-		Name:    name,
-		Surname: surname,
+		User:       user,
+		Name:       name,
+		Surname:    surname,
+		AvatarPath: avatarPath,
 	}, nil
 }
 

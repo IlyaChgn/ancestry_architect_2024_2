@@ -153,6 +153,12 @@ const (
 		WHERE id = $2;
 		`
 
+	UpdateGenderQuery = `
+		UPDATE public.node
+		SET gender = $1
+		WHERE id = $2;
+		`
+
 	SetRelativeQuery = `
 		INSERT
 		INTO public.relation (relative_id, node_id, relation_type)
