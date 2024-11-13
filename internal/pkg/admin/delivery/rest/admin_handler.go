@@ -24,5 +24,7 @@ func (adminHandler *AdminHandler) createSession(sessionID string) *http.Cookie {
 		Path:     "/",
 		Expires:  time.Now().Add(mysession.AdminSessionDuration),
 		HttpOnly: true,
+		SameSite: 4,
+		Secure:   true,
 	}
 }
