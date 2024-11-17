@@ -56,11 +56,13 @@ const (
 			SELECT
 				nd.id AS node_id,
 				COALESCE(
-								json_agg(DISTINCT rl.relative_id) FILTER (WHERE rl.relation_type = 'Родитель'),
+								json_agg(DISTINCT rl.relative_id) 
+									FILTER (WHERE rl.relation_type = 'Родитель' AND NOT rl.is_deleted),
 								'[]'::json
 				) AS parent_ids,
 				COALESCE(
-								json_agg(DISTINCT rl.relative_id) FILTER (WHERE rl.relation_type = 'Супруг'),
+								json_agg(DISTINCT rl.relative_id) 
+									FILTER (WHERE rl.relation_type = 'Супруг' AND NOT rl.is_deleted),
 								'[]'::json
 				) AS spouse_ids
 			FROM public.node nd
@@ -72,7 +74,8 @@ const (
 				 SELECT
 					 nd.id AS node_id,
 					 COALESCE(
-									 json_agg(DISTINCT rl.node_id) FILTER (WHERE rl.relation_type = 'Родитель'),
+									 json_agg(DISTINCT rl.node_id) 
+										FILTER (WHERE rl.relation_type = 'Родитель' AND NOT rl.is_deleted),
 									 '[]'::json
 					 ) AS children_ids
 				 FROM public.node nd
@@ -176,5 +179,11 @@ const (
 		UPDATE public.node
 		SET is_deleted = TRUE
 		WHERE id = $1;
+		`
+
+	DeleteRelationsQuery = `
+		UPDATE public.relation
+		SET is_deleted = TRUE
+		WHERE relative_id = $1 OR node_id = $1;
 		`
 )

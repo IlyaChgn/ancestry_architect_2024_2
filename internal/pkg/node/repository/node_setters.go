@@ -54,7 +54,17 @@ func (storage *NodeStorage) DeleteNode(ctx context.Context, nodeID uint) error {
 
 	_, err := storage.pool.Exec(ctx, DeleteNodeQuery, nodeID)
 	if err != nil {
-		customErr := fmt.Errorf("something went wrong while seleting node, %v", err)
+		customErr := fmt.Errorf("something went wrong while deleting node, %v", err)
+
+		utils.LogError(logger, customErr)
+		log.Println(customErr)
+
+		return err
+	}
+
+	_, err = storage.pool.Exec(ctx, DeleteRelationsQuery, nodeID)
+	if err != nil {
+		customErr := fmt.Errorf("something went wrong while deleting node relations, %v", err)
 
 		utils.LogError(logger, customErr)
 		log.Println(customErr)
