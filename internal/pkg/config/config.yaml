@@ -1,0 +1,23 @@
+server:
+  host: 127.0.0.1
+  port: :8080
+  timeout: 5
+  origins:
+    - http://127.0.0.1:8008
+    - http://127.0.0.1
+    - http://localhost:3000
+  headers:
+    - X-Requested-With
+    - Content-Type
+  methods:
+    - GET
+    - POST
+    - DELETE
+    - PUT
+    - HEAD
+    - OPTIONS
+
+admin_service:
+  host: 127.0.0.1
+  port: 8081
+  timeout: 5

@@ -1,0 +1,97 @@
+//protoc --go_out=. --go-grpc_out=. --go-grpc_opt=paths=source_relative --go_opt=paths=source_relative *.proto
+
+syntax = "proto3";
+
+option go_package = "./internal/pkg/admin/delivery/grpc";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+service Admin {
+  rpc GetAdminBySessionID(SessionRequest) returns (UserData);
+
+  rpc Login(LoginUserRequest) returns (UserAuthResponse);
+  rpc Logout(SessionRequest) returns (UserAuthResponse);
+  rpc EditPassword(EditPasswordRequest) returns (UserData);
+  rpc GetUsersList(google.protobuf.Empty) returns (UserDataList);
+
+  rpc GetNodesList(GetNodesListRequest) returns (NodeDataList);
+  rpc EditTreeName(EditTreeNameRequest) returns (TreeData);
+  rpc GetTreesList(GetTreesListRequest) returns (TreeDataList);
+}
+
+message LoginUserRequest {
+  string Email = 1;
+  string Password = 2;
+}
+
+message SessionRequest {
+  string SessionID = 1;
+}
+
+message EditPasswordRequest {
+  uint32 ID = 1;
+  string Password = 2;
+}
+
+message UserEmailRequest {
+  string Email = 1;
+}
+
+message UserAuthResponse {
+  uint32 ID = 1;
+  string Email = 2;
+  string PasswordHash = 3;
+  string SessionID = 4;
+}
+
+message UserData {
+  uint32 ID = 1;
+  string Email = 2;
+  string PasswordHash = 3;
+}
+
+message GetNodesListRequest {
+  uint32 TreeID = 1;
+}
+
+message NodeData {
+  uint32 ID = 1;
+  string Name = 2;
+  google.protobuf.Timestamp Birthdate = 3;
+  google.protobuf.Timestamp Deathdate = 4;
+  string Gender = 5;
+  string PreviewPath = 6;
+  uint32 LayerID = 7;
+  int32 LayerNum = 8;
+  uint32 TreeID = 9;
+  uint32 UserID = 10;
+  bool IsDeleted = 11;
+}
+
+message GetTreesListRequest {
+  uint32 UserID = 1;
+}
+
+message EditTreeNameRequest {
+  uint32 TreeID = 1;
+  string Name = 2;
+}
+
+message TreeData {
+  uint32 ID = 1;
+  uint32 UserID = 2;
+  string Name = 3;
+}
+
+message UserDataList {
+  repeated UserData Users = 1;
+}
+
+message TreeDataList {
+  repeated TreeData Trees = 1;
+}
+
+message NodeDataList {
+  repeated NodeData Nodes = 1;
+}
