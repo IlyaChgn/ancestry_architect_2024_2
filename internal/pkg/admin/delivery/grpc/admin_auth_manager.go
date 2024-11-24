@@ -83,10 +83,10 @@ func (manager *AdminManager) GetUsersList(ctx context.Context, empty *emptypb.Em
 }
 
 func (manager *AdminManager) GetAdminBySessionID(ctx context.Context,
-	request *proto.SessionRequest) (*proto.UserData, error) {
+	in *proto.SessionRequest) (*proto.UserData, error) {
 	storage := manager.storage
 
-	user, err := storage.GetAdminBySessionID(ctx, request.GetSessionID())
+	user, err := storage.GetAdminBySessionID(ctx, in.GetSessionID())
 	if err != nil {
 		return nil, err
 	}
@@ -96,4 +96,31 @@ func (manager *AdminManager) GetAdminBySessionID(ctx context.Context,
 		Email:        user.Email,
 		PasswordHash: "",
 	}, nil
+}
+
+func (manager *AdminManager) CreateUser(ctx context.Context, in *proto.LoginUserRequest) (*proto.UserData, error) {
+	storage := manager.storage
+
+	user, err := storage.CreateUser(ctx, in.GetEmail(), in.GetPassword())
+	if err != nil {
+		return nil, err
+	}
+
+	return &proto.UserData{
+		ID:           uint32(user.ID),
+		Email:        user.Email,
+		PasswordHash: user.PasswordHash,
+	}, nil
+}
+
+func (manager *AdminManager) DeleteUser(ctx context.Context,
+	in *proto.DeleteUserRequest) (*proto.DeleteUserResponse, error) {
+	storage := manager.storage
+
+	err := storage.DeleteUser(ctx, uint(in.GetID()))
+	if err != nil {
+		return nil, err
+	}
+
+	return &proto.DeleteUserResponse{Success: true}, nil
 }

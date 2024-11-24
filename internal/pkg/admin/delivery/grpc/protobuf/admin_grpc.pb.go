@@ -27,6 +27,8 @@ const (
 	Admin_Logout_FullMethodName              = "/Admin/Logout"
 	Admin_EditPassword_FullMethodName        = "/Admin/EditPassword"
 	Admin_GetUsersList_FullMethodName        = "/Admin/GetUsersList"
+	Admin_CreateUser_FullMethodName          = "/Admin/CreateUser"
+	Admin_DeleteUser_FullMethodName          = "/Admin/DeleteUser"
 	Admin_GetNodesList_FullMethodName        = "/Admin/GetNodesList"
 	Admin_EditTreeName_FullMethodName        = "/Admin/EditTreeName"
 	Admin_GetTreesList_FullMethodName        = "/Admin/GetTreesList"
@@ -41,6 +43,8 @@ type AdminClient interface {
 	Logout(ctx context.Context, in *SessionRequest, opts ...grpc.CallOption) (*UserAuthResponse, error)
 	EditPassword(ctx context.Context, in *EditPasswordRequest, opts ...grpc.CallOption) (*UserData, error)
 	GetUsersList(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*UserDataList, error)
+	CreateUser(ctx context.Context, in *LoginUserRequest, opts ...grpc.CallOption) (*UserData, error)
+	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error)
 	GetNodesList(ctx context.Context, in *GetNodesListRequest, opts ...grpc.CallOption) (*NodeDataList, error)
 	EditTreeName(ctx context.Context, in *EditTreeNameRequest, opts ...grpc.CallOption) (*TreeData, error)
 	GetTreesList(ctx context.Context, in *GetTreesListRequest, opts ...grpc.CallOption) (*TreeDataList, error)
@@ -104,6 +108,26 @@ func (c *adminClient) GetUsersList(ctx context.Context, in *emptypb.Empty, opts 
 	return out, nil
 }
 
+func (c *adminClient) CreateUser(ctx context.Context, in *LoginUserRequest, opts ...grpc.CallOption) (*UserData, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UserData)
+	err := c.cc.Invoke(ctx, Admin_CreateUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminClient) DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteUserResponse)
+	err := c.cc.Invoke(ctx, Admin_DeleteUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *adminClient) GetNodesList(ctx context.Context, in *GetNodesListRequest, opts ...grpc.CallOption) (*NodeDataList, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(NodeDataList)
@@ -143,6 +167,8 @@ type AdminServer interface {
 	Logout(context.Context, *SessionRequest) (*UserAuthResponse, error)
 	EditPassword(context.Context, *EditPasswordRequest) (*UserData, error)
 	GetUsersList(context.Context, *emptypb.Empty) (*UserDataList, error)
+	CreateUser(context.Context, *LoginUserRequest) (*UserData, error)
+	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error)
 	GetNodesList(context.Context, *GetNodesListRequest) (*NodeDataList, error)
 	EditTreeName(context.Context, *EditTreeNameRequest) (*TreeData, error)
 	GetTreesList(context.Context, *GetTreesListRequest) (*TreeDataList, error)
@@ -170,6 +196,12 @@ func (UnimplementedAdminServer) EditPassword(context.Context, *EditPasswordReque
 }
 func (UnimplementedAdminServer) GetUsersList(context.Context, *emptypb.Empty) (*UserDataList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUsersList not implemented")
+}
+func (UnimplementedAdminServer) CreateUser(context.Context, *LoginUserRequest) (*UserData, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
+}
+func (UnimplementedAdminServer) DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
 }
 func (UnimplementedAdminServer) GetNodesList(context.Context, *GetNodesListRequest) (*NodeDataList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNodesList not implemented")
@@ -291,6 +323,42 @@ func _Admin_GetUsersList_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Admin_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).CreateUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_CreateUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).CreateUser(ctx, req.(*LoginUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_DeleteUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).DeleteUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_DeleteUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).DeleteUser(ctx, req.(*DeleteUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Admin_GetNodesList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetNodesListRequest)
 	if err := dec(in); err != nil {
@@ -371,6 +439,14 @@ var Admin_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUsersList",
 			Handler:    _Admin_GetUsersList_Handler,
+		},
+		{
+			MethodName: "CreateUser",
+			Handler:    _Admin_CreateUser_Handler,
+		},
+		{
+			MethodName: "DeleteUser",
+			Handler:    _Admin_DeleteUser_Handler,
 		},
 		{
 			MethodName: "GetNodesList",

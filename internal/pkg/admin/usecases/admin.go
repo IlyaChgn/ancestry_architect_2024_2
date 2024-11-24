@@ -10,6 +10,8 @@ type AdminStorageInterface interface {
 	GetAdminBySessionID(ctx context.Context, sessionID string) (*models.User, error)
 	UpdatePassword(ctx context.Context, id uint, password string) (*models.User, error)
 	GetUsersList(ctx context.Context) (*[]models.User, error)
+	CreateUser(ctx context.Context, email, password string) (*models.User, error)
+	DeleteUser(ctx context.Context, userID uint) error
 	CreateSession(ctx context.Context, sessionID string, userID uint) error
 	RemoveSession(ctx context.Context, sessionID string) error
 

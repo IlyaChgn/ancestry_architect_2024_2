@@ -14,6 +14,8 @@ service Admin {
   rpc Logout(SessionRequest) returns (UserAuthResponse);
   rpc EditPassword(EditPasswordRequest) returns (UserData);
   rpc GetUsersList(google.protobuf.Empty) returns (UserDataList);
+  rpc CreateUser(LoginUserRequest) returns (UserData);
+  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
 
   rpc GetNodesList(GetNodesListRequest) returns (NodeDataList);
   rpc EditTreeName(EditTreeNameRequest) returns (TreeData);
@@ -49,6 +51,14 @@ message UserData {
   uint32 ID = 1;
   string Email = 2;
   string PasswordHash = 3;
+}
+
+message DeleteUserRequest {
+  uint32 ID = 1;
+}
+
+message DeleteUserResponse {
+  bool Success = 1;
 }
 
 message GetNodesListRequest {
