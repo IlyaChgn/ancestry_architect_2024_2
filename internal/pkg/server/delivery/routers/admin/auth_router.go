@@ -18,4 +18,6 @@ func ServeAdminAuthRouter(router *mux.Router, adminHandler *delivery.AdminHandle
 	subrouterAdminRequired.HandleFunc("/logout", adminHandler.Logout).Methods("POST")
 	subrouterAdminRequired.HandleFunc("/password", adminHandler.EditUserPassword).Methods("POST")
 	subrouterAdminRequired.HandleFunc("/list", adminHandler.GetUsersList).Methods("GET")
+	subrouterAdminRequired.HandleFunc("/user/{id:[0-9]+}", adminHandler.DeleteUser).Methods("DELETE")
+	subrouterAdminRequired.HandleFunc("/user", adminHandler.CreateUser).Methods("POST")
 }

@@ -97,6 +97,60 @@ func (storage *AdminStorage) GetUsersList(ctx context.Context) (*[]models.User, 
 	return &users, nil
 }
 
+func (storage *AdminStorage) CreateUser(ctx context.Context, email, password string) (*models.User, error) {
+	logger := utils.GetLoggerFromContext(ctx).With(zap.String("storage", utils.GetFunctionName()))
+
+	var user models.User
+
+	line := storage.pool.QueryRow(ctx, CreateUserByAdminQuery, email, utils.HashPassword(password))
+	if err := line.Scan(&user.ID, &user.Email, &user.PasswordHash); err != nil {
+		customErr := fmt.Errorf("something went wrong while creating user, %v", err)
+
+		utils.LogError(logger, customErr)
+		log.Println(customErr)
+
+		return nil, customErr
+	}
+
+	_, err := storage.pool.Exec(ctx, CreateProfileByAdminQuery, user.ID)
+	if err != nil {
+		customErr := fmt.Errorf("something went wrong while creating profile, %v", err)
+
+		utils.LogError(logger, customErr)
+		log.Println(customErr)
+
+		return nil, customErr
+	}
+
+	return &user, nil
+}
+
+func (storage *AdminStorage) DeleteUser(ctx context.Context, userID uint) error {
+	logger := utils.GetLoggerFromContext(ctx).With(zap.String("storage", utils.GetFunctionName()))
+
+	_, err := storage.pool.Exec(ctx, DeleteProfileQuery, userID)
+	if err != nil {
+		customErr := fmt.Errorf("something went wrong while deleting profile, %v", err)
+
+		utils.LogError(logger, customErr)
+		log.Println(customErr)
+
+		return customErr
+	}
+
+	_, err = storage.pool.Exec(ctx, DeleteUserQuery, userID)
+	if err != nil {
+		customErr := fmt.Errorf("something went wrong while deleting user, %v", err)
+
+		utils.LogError(logger, customErr)
+		log.Println(customErr)
+
+		return customErr
+	}
+
+	return nil
+}
+
 func (storage *AdminStorage) getUserByID(ctx context.Context, id uint) (*models.User, error) {
 	logger := utils.GetLoggerFromContext(ctx).With(zap.String("storage", utils.GetFunctionName()))
 

@@ -6,10 +6,12 @@ import (
 	proto "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/admin/delivery/grpc/protobuf"
 	responses "github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/server/delivery"
 	"github.com/IlyaChgn/ancestry_architect_2024_2/internal/pkg/utils"
+	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -142,6 +144,67 @@ func (adminHandler *AdminHandler) GetUsersList(writer http.ResponseWriter, reque
 	}
 
 	responses.SendOkResponse(writer, &users)
+}
+
+func (adminHandler *AdminHandler) CreateUser(writer http.ResponseWriter, request *http.Request) {
+	ctx := request.Context()
+	logger := utils.GetLoggerFromContext(ctx).With(zap.String("handler", utils.GetFunctionName()))
+
+	var requestData models.UserLoginRequest
+
+	err := json.NewDecoder(request.Body).Decode(&requestData)
+	if err != nil {
+		log.Println(err, responses.StatusInternalServerError)
+		responses.SendErrResponse(writer, logger, responses.StatusInternalServerError, responses.ErrInternalServer)
+
+		return
+	}
+
+	client := adminHandler.adminClient
+
+	user, err := client.CreateUser(ctx, &proto.LoginUserRequest{
+		Email:    requestData.Email,
+		Password: requestData.Password,
+	})
+	if err != nil {
+		log.Println(err, responses.StatusBadRequest)
+		responses.SendErrResponse(writer, logger, responses.StatusBadRequest, responses.ErrBadRequest)
+
+		return
+	}
+
+	responses.SendOkResponse(writer, &models.UserForAdminResponse{
+		ID:           uint(user.ID),
+		Email:        user.Email,
+		PasswordHash: user.PasswordHash,
+	})
+}
+
+func (adminHandler *AdminHandler) DeleteUser(writer http.ResponseWriter, request *http.Request) {
+	ctx := request.Context()
+	logger := utils.GetLoggerFromContext(ctx).With(zap.String("handler", utils.GetFunctionName()))
+
+	vars := mux.Vars(request)
+
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		log.Println(err, responses.StatusInternalServerError)
+		responses.SendErrResponse(writer, logger, responses.StatusInternalServerError, responses.ErrInternalServer)
+
+		return
+	}
+
+	client := adminHandler.adminClient
+
+	resp, err := client.DeleteUser(ctx, &proto.DeleteUserRequest{ID: uint32(id)})
+	if err != nil {
+		log.Println(err, responses.StatusBadRequest)
+		responses.SendErrResponse(writer, logger, responses.StatusBadRequest, responses.ErrBadRequest)
+
+		return
+	}
+
+	responses.SendOkResponse(writer, &models.SuccessResponse{Success: resp.GetSuccess()})
 }
 
 func (adminHandler *AdminHandler) CheckAuth(writer http.ResponseWriter, request *http.Request) {
